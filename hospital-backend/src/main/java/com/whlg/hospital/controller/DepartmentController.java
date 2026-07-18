@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 绉戝鎺у埗鍣? */
+ * 科室控制器
+ */
 
 @RestController
 @RequestMapping("/department")
@@ -19,9 +20,9 @@ public class DepartmentController {
     private DepartmentService departmentService;
 
     /**
-     * 鏍规嵁ID鍒楄〃鎵归噺鏌ヨ绉戝
-     * @param ids 绉戝ID鍒楄〃
-     * @return 绉戝鍒楄〃
+     * 根据ID列表批量查询科室
+     * @param ids 科室ID列表
+     * @return 科室列表
      */
     @GetMapping("/listByIds")
     public R<List<Department>> listByIds(@RequestParam List<Long> ids) {
@@ -29,4 +30,3 @@ public class DepartmentController {
         return R.createSuccess(departments);
     }
 }
-

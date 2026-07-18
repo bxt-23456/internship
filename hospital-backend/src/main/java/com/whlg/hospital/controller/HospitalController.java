@@ -11,7 +11,8 @@ import com.whlg.hospital.vo.DepartmentTreeVo;
 import java.util.List;
 
 /**
- * 鍖婚櫌鎺у埗鍣? */
+ * 医院控制器
+ */
 
 @RestController
 @RequestMapping("/hospital")
@@ -21,11 +22,11 @@ public class HospitalController {
     private HospitalService hospitalService;
 
     /**
-     * 鑾峰彇鍖婚櫌鍒楄〃锛堟敮鎸佸垎椤靛拰绉戝绛涢€夛級
-     * @param departmentId 绉戝ID锛堝彲閫夛級
-     * @param page 椤电爜
-     * @param pageSize 姣忛〉鏁伴噺
-     * @return 鍖婚櫌鍒楄〃
+     * 获取医院列表（支持分页和科室筛选）
+     * @param departmentId 科室ID（可选）
+     * @param page 页码
+     * @param pageSize 每页数量
+     * @return 医院列表
      */
     @GetMapping("/list")
     public R<List<HospitalVo>> listHospitals(
@@ -37,9 +38,9 @@ public class HospitalController {
     }
 
     /**
-     * 鑾峰彇鍖婚櫌鎬绘暟
-     * @param departmentId 绉戝ID锛堝彲閫夛級
-     * @return 鍖婚櫌鎬绘暟
+     * 获取医院总数
+     * @param departmentId 科室ID（可选）
+     * @return 医院总数
      */
     @GetMapping("/count")
     public R<Integer> countHospitals(@RequestParam(required = false) Long departmentId) {
@@ -48,9 +49,9 @@ public class HospitalController {
     }
 
     /**
-     * 鏍规嵁ID鑾峰彇鍖婚櫌璇︽儏
-     * @param id 鍖婚櫌ID
-     * @return 鍖婚櫌璇︽儏
+     * 根据ID获取医院详情
+     * @param id 医院ID
+     * @return 医院详情
      */
     @GetMapping("/detail/{id}")
     public R<HospitalVo> getHospitalDetail(@PathVariable Long id) {
@@ -59,9 +60,9 @@ public class HospitalController {
     }
 
     /**
-     * 鑾峰彇鎺ㄨ崘鍖婚櫌鍒楄〃
-     * @param limit 鏁伴噺闄愬埗
-     * @return 鎺ㄨ崘鍖婚櫌鍒楄〃
+     * 获取推荐医院列表
+     * @param limit 数量限制
+     * @return 推荐医院列表
      */
     @GetMapping("/listTop")
     public R<List<HospitalVo>> listTopHospitals(@RequestParam(defaultValue = "4") int limit) {
@@ -70,8 +71,9 @@ public class HospitalController {
     }
 
     /**
-     * 鏍规嵁鍖婚櫌ID鑾峰彇鍖婚櫌鐨勭瀹ゅ垪琛?     * @param hospitalId 鍖婚櫌ID
-     * @return 绉戝鍒楄〃
+     * 根据医院ID获取医院的科室列表
+     * @param hospitalId 医院ID
+     * @return 科室列表
      */
     @GetMapping("/departments/{hospitalId}")
     public R<List<Long>> getHospitalDepartments(@PathVariable Long hospitalId) {
@@ -80,8 +82,9 @@ public class HospitalController {
     }
 
     /**
-     * 鑾峰彇鍖婚櫌鐨勭瀹ゆ爲褰㈢粨鏋?     * @param hospitalId 鍖婚櫌ID
-     * @return 绉戝鏍戝舰缁撴瀯
+     * 获取医院的科室树形结构
+     * @param hospitalId 医院ID
+     * @return 科室树形结构
      */
     @GetMapping("/departments/tree/{hospitalId}")
     public R<List<DepartmentTreeVo>> getHospitalDepartmentTree(@PathVariable Long hospitalId) {
@@ -89,4 +92,3 @@ public class HospitalController {
         return R.createSuccess(tree);
     }
 }
-
