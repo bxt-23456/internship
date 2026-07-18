@@ -8,7 +8,7 @@ Vue.component('header-component', {
                 </div>
                 <div class="nav">
                     <a href="index.html" :class="{active: activeNav === 'home'}">首页</a>
-                    <a href="hospital.html" :class="{active: activeNav === 'hospital'}">找医院</a>
+                    <a href="hospital_with_api.html" :class="{active: activeNav === 'hospital'}">找医院</a>
                     <a href="doctor.html" :class="{active: activeNav === 'doctor'}">找医生</a>
                     <a href="disease.html" :class="{active: activeNav === 'disease'}">查疾病</a>
                     <a href="article.html" :class="{active: activeNav === 'article'}">健康科普</a>

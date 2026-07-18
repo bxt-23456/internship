@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>我的关注 - 健康之路在线医疗</title>
+    <script src="js/vue.js"></script>
+    <script src="js/axios-0.18.0.js"></script>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+        }
+        .content {
+            width: 1200px;
+            margin: 30px auto;
+            display: flex;
+            gap: 25px;
+        }
+        .sidebar {
+            width: 240px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .menu-group {
+            margin-bottom: 25px;
+        }
+        .menu-group:last-child {
+            margin-bottom: 0;
+        }
+        .menu-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            padding-left: 10px;
+            border-left: 4px solid #1e88e5;
+        }
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .menu-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        .menu-item:hover {
+            background-color: #f0f7ff;
+            color: #1e88e5;
+        }
+        .menu-item.active {
+            background-color: #e3f2fd;
+            color: #1e88e5;
+            font-weight: 500;
+        }
+        .menu-item::before {
+            content: '■';
+            margin-right: 8px;
+            font-size: 10px;
+            color: #999;
+        }
+        .menu-item.active::before {
+            color: #1e88e5;
+        }
+        .main-content {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .page-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e3f2fd;
+        }
+        .hospital-list {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .hospital-item {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .hospital-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        .hospital-image {
+            width: 100%;
+            height: 120px;
+            border-radius: 6px;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+        .hospital-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .hospital-level {
+            display: inline-block;
+            background-color: #1e88e5;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        .hospital-address {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .hospital-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #999;
+        }
+        .hospital-stats span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .unfollow-btn {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e8eef3;
+            border-radius: 4px;
+            background-color: white;
+            color: #666;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+        .unfollow-btn:hover {
+            background-color: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            color: #999;
+        }
+        .empty-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        .empty-text {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .empty-subtext {
+            font-size: 14px;
+            color: #ccc;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="content">
+            <!-- 左侧菜单 -->
+            <div class="sidebar">
+                <div class="menu-group">
+                    <div class="menu-title">个人中心</div>
+                    <ul class="menu-list">
+                        <li class="menu-item" @click="goTo('my-appointment.html')">我的挂号</li>
+                        <li class="menu-item" @click="goTo('my-consult.html')">我的咨询</li>
+                        <li class="menu-item active" @click="goTo('my-follows.html')">我的关注</li>
+                        <li class="menu-item" @click="goTo('my-reviews.html')">我的评价</li>
+                        <li class="menu-item" @click="goTo('my-feedback.html')">我的反馈</li>
+                        <li class="menu-item" @click="goTo('my-messages.html')">我的消息</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 右侧内容 -->
+            <div class="main-content">
+                <div class="page-title">我的关注</div>
+                
+                <!-- 加载状态 -->
+                <div v-if="loading" class="loading">
+                    加载中...
+                </div>
+                
+                <!-- 空状态 -->
+                <div v-else-if="hospitals.length === 0" class="empty-state">
+                    <div class="empty-icon">🏥</div>
+                    <div class="empty-text">暂无关注医院</div>
+                    <div class="empty-subtext">您可以浏览医院详情页关注感兴趣的医院</div>
+                </div>
+                
+                <!-- 医院列表 -->
+                <div v-else class="hospital-list">
+                    <div v-for="hospital in hospitals" :key="hospital.id" class="hospital-item" @click="goToDetail(hospital.id)">
+                        <img :src="hospital.image" :alt="hospital.name" class="hospital-image">
+                        <div class="hospital-name">{{ hospital.name }}</div>
+                        <div class="hospital-level">{{ hospital.level }}</div>
+                        <div class="hospital-address">{{ hospital.address }}</div>
+                        <div class="hospital-stats">
+                            <span>👨‍⚕️ {{ hospital.doctorCount || 0 }} 位医生</span>
+                            <span>🏢 {{ hospital.departmentCount || 0 }} 个科室</span>
+                            <span>❤️ {{ hospital.followCount || 0 }} 人关注</span>
+                        </div>
+                        <button class="unfollow-btn" @click.stop="unfollowHospital(hospital.id)">
+                            取消关注
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080';
+        
+        // 配置axios默认允许跨域携带凭证
+        axios.defaults.withCredentials = true;
+
+        new Vue({
+            el: '#app',
+            data: {
+                hospitals: [],
+                loading: true
+            },
+            methods: {
+                goTo(url) {
+                    window.location.href = url;
+                },
+                goToDetail(id) {
+                    window.location.href = 'hospital_detail_with_api.html?hospitalId=' + id;
+                },
+                async loadFollowedHospitals() {
+                    this.loading = true;
+                    try {
+                        const response = await axios.get(`${API_BASE_URL}/follow/hospitals`);
+                        if (response.data.code === 20000) {
+                            this.hospitals = response.data.data || [];
+                        } else {
+                            alert(response.data.message || '加载失败，请先登录');
+                        }
+                    } catch (error) {
+                        console.error('加载关注医院列表失败:', error);
+                        alert('加载失败，请检查网络或登录状态');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                async unfollowHospital(hospitalId) {
+                    if (!confirm('确定要取消关注这个医院吗？')) {
+                        return;
+                    }
+                    
+                    try {
+                        const response = await axios.post(`${API_BASE_URL}/follow/toggle`, null, {
+                            params: { 
+                                followType: 1,
+                                followId: hospitalId 
+                            }
+                        });
+                        if (response.data.code === 20000) {
+                            this.hospitals = this.hospitals.filter(h => h.id !== hospitalId);
+                            alert('已取消关注');
+                        } else {
+                            alert(response.data.message || '操作失败');
+                        }
+                    } catch (error) {
+                        console.error('取消关注失败:', error);
+                        alert('操作失败，请检查网络或登录状态');
+                    }
+                }
+            },
+            mounted() {
+                this.loadFollowedHospitals();
+            }
+        });
+    </script>
+</body>
+</html>

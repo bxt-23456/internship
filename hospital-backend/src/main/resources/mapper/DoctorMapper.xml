@@ -4,16 +4,30 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <!-- SQL映射文件 *Mapper.xml命名 -->
-<!-- namespace='命名空间的名字,唯一' -->
+<!-- namespace='命名空间的名字 唯一' -->
 <mapper namespace="com.whlg.hospital.mapper.DoctorMapper">
 
-    <!-- 单个表的增删改查不需要再写sql语句,如果出现多表联表查询则需要编写SQL语句,可以再该XML配置文件中编写 -->
+    <!-- 单个表的增删改查不需要再写sql语句,如果出现多表联表查询则需要编写SQL语句,可以在该XML配置文件中编写 -->
 
     <select id="selectDoctorVoBy" parameterType="int" resultType="DoctorVo" >
         SELECT d.id,d.name doctorName,d.title,d.avatar,h.name hospitalName,dt.name departmentName
         FROM t_doctor d INNER JOIN t_hospital h ON d.hospital_id=h.id
                         INNER JOIN t_department dt ON d.department_id=dt.id
         limit #{limit}
+    </select>
+
+    <!-- 根据医院ID查询医生列表（可选按科室筛选） -->
+    <select id="selectDoctorsByHospital" resultType="DoctorVo">
+        SELECT d.id, d.name doctorName, d.title, d.avatar, 
+               h.name hospitalName, dt.name departmentName, dt.id departmentId
+        FROM t_doctor d 
+        INNER JOIN t_hospital h ON d.hospital_id = h.id
+        INNER JOIN t_department dt ON d.department_id = dt.id
+        WHERE d.hospital_id = #{hospitalId}
+        <if test="departmentId != null">
+            AND d.department_id = #{departmentId}
+        </if>
+        ORDER BY d.follow_count DESC
     </select>
 
 </mapper>

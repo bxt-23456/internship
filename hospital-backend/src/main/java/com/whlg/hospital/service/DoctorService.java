@@ -11,4 +11,7 @@ public interface DoctorService extends IService<Doctor> {
     //查询医生及对应的医院名称、科室名称
     public List<DoctorVo> listTopDoctorVo(int limit);
 
+    //根据医院ID查询医生列表（可选按科室筛选）
+    public List<DoctorVo> listDoctorsByHospital(Long hospitalId, Long departmentId);
+
 }

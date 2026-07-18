@@ -12,9 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
- * 用户控制器
- */
-@CrossOrigin("*")
+ * 鐢ㄦ埛鎺у埗鍣? */
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -26,9 +25,7 @@ public class UserController {
     private JwtUtil jwtUtil;
 
     /**
-     * 用户注册
-     * @param params 包含phone, password, username(可选)
-     * @return 注册结果
+     * 鐢ㄦ埛娉ㄥ唽
      */
     @PostMapping("/register")
     public R<Map<String, Object>> register(@RequestBody Map<String, String> params) {
@@ -37,10 +34,10 @@ public class UserController {
         String username = params.get("username");
 
         if (phone == null || phone.isEmpty()) {
-            return R.createError("手机号不能为空");
+            return R.createError("鎵嬫満鍙蜂笉鑳戒负绌?");
         }
         if (password == null || password.isEmpty()) {
-            return R.createError("密码不能为空");
+            return R.createError("瀵嗙爜涓嶈兘涓虹┖");
         }
 
         Map<String, Object> result = userService.register(phone, password, username);
@@ -52,24 +49,31 @@ public class UserController {
     }
 
     /**
-     * 用户登录
-     * @param params 包含phone, password
-     * @return 登录结果（包含token和用户信息）
+     * 鐢ㄦ埛鐧诲綍
      */
     @PostMapping("/login")
-    public R<Map<String, Object>> login(@RequestBody Map<String, String> params) {
+    public R<Map<String, Object>> login(@RequestBody Map<String, String> params, HttpServletRequest request) {
         String phone = params.get("phone");
         String password = params.get("password");
 
         if (phone == null || phone.isEmpty()) {
-            return R.createError("手机号不能为空");
+            return R.createError("鎵嬫満鍙蜂笉鑳戒负绌?");
         }
         if (password == null || password.isEmpty()) {
-            return R.createError("密码不能为空");
+            return R.createError("瀵嗙爜涓嶈兘涓虹┖");
         }
 
         Map<String, Object> result = userService.login(phone, password);
         if ((Boolean) result.get("success")) {
+            // 灏嗙敤鎴蜂俊鎭瓨鍌ㄥ埌Session涓?            @SuppressWarnings("unchecked")
+            Map<String, Object> userInfo = (Map<String, Object>) result.get("userInfo");
+            if (userInfo != null) {
+                User user = new User();
+                user.setId((Long) userInfo.get("id"));
+                user.setUsername((String) userInfo.get("username"));
+                user.setAvatar((String) userInfo.get("avatar"));
+                request.getSession().setAttribute("user", user);
+            }
             return R.createSuccess(result);
         } else {
             return R.createError((String) result.get("message"));
@@ -77,94 +81,71 @@ public class UserController {
     }
 
     /**
-     * 获取当前登录用户信息
-     * @param request HTTP请求（包含token）
-     * @return 用户信息
+     * 鑾峰彇褰撳墠鐧诲綍鐢ㄦ埛淇℃伅
      */
     @GetMapping("/info")
     public R<User> getUserInfo(HttpServletRequest request) {
-        Long userId = getUserIdFromRequest(request);
-        if (userId == null) {
-            return R.createError(StatusCode.TOKEN_EXPIRE, "未登录或登录已过期");
-        }
-
-        User user = userService.getUserInfo(userId);
+        User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
-            return R.createError("用户不存在");
+            return R.createError(20001, "璇峰厛鐧诲綍");
         }
         return R.createSuccess(user);
     }
 
     /**
-     * 更新用户个人信息
-     * @param user 用户信息
-     * @param request HTTP请求（包含token）
-     * @return 更新结果
-     */
-    @PutMapping("/info")
-    public R<String> updateUserInfo(@RequestBody User user, HttpServletRequest request) {
-        Long userId = getUserIdFromRequest(request);
-        if (userId == null) {
-            return R.createError(StatusCode.TOKEN_EXPIRE, "未登录或登录已过期");
-        }
+     * 閫€鍑虹櫥褰?     */
+    @PostMapping("/logout")
+    public R<String> logout(HttpServletRequest request) {
+        request.getSession().invalidate();
+        return R.createSuccess("閫€鍑烘垚鍔?");
+    }
 
-        user.setId(userId); // 确保只能修改自己的信息
+    /**
+     * 鏇存柊鐢ㄦ埛淇℃伅
+     */
+    @PutMapping("/update")
+    public R<Boolean> updateUser(@RequestBody User user, HttpServletRequest request) {
+        User currentUser = (User) request.getSession().getAttribute("user");
+        if (currentUser == null) {
+            return R.createError(20001, "璇峰厛鐧诲綍");
+        }
+        
+        user.setId(currentUser.getId());
         boolean success = userService.updateUserInfo(user);
         if (success) {
-            return R.createSuccess("更新成功");
+            // 鏇存柊Session涓殑鐢ㄦ埛淇℃伅
+            if (user.getUsername() != null) {
+                currentUser.setUsername(user.getUsername());
+            }
+            if (user.getAvatar() != null) {
+                currentUser.setAvatar(user.getAvatar());
+            }
+            request.getSession().setAttribute("user", currentUser);
+            return R.createSuccess(true);
         } else {
-            return R.createError("更新失败");
+            return R.createError("鏇存柊澶辫触");
         }
     }
 
     /**
-     * 修改密码
-     * @param params 包含oldPassword, newPassword
-     * @param request HTTP请求（包含token）
-     * @return 修改结果
+     * 淇敼瀵嗙爜
      */
-    @PutMapping("/password")
+    @PostMapping("/changePassword")
     public R<String> changePassword(@RequestBody Map<String, String> params, HttpServletRequest request) {
-        Long userId = getUserIdFromRequest(request);
-        if (userId == null) {
-            return R.createError(StatusCode.TOKEN_EXPIRE, "未登录或登录已过期");
+        User currentUser = (User) request.getSession().getAttribute("user");
+        if (currentUser == null) {
+            return R.createError(20001, "璇峰厛鐧诲綍");
         }
-
+        
         String oldPassword = params.get("oldPassword");
         String newPassword = params.get("newPassword");
-
-        if (oldPassword == null || oldPassword.isEmpty()) {
-            return R.createError("请输入原密码");
-        }
-        if (newPassword == null || newPassword.isEmpty()) {
-            return R.createError("请输入新密码");
-        }
-
-        String result = userService.changePassword(userId, oldPassword, newPassword);
-        if ("密码修改成功".equals(result)) {
+        
+        String result = userService.changePassword(currentUser.getId(), oldPassword, newPassword);
+        if ("瀵嗙爜淇敼鎴愬姛".equals(result)) {
             return R.createSuccess(result);
         } else {
             return R.createError(result);
         }
     }
-
-    /**
-     * 从请求中获取用户ID
-     * @param request HTTP请求
-     * @return 用户ID，无效则返回null
-     */
-    private Long getUserIdFromRequest(HttpServletRequest request) {
-        String token = request.getHeader("token");
-        if (token == null || token.isEmpty()) {
-            return null;
-        }
-        try {
-            if (jwtUtil.validateToken(token)) {
-                return jwtUtil.getUserIdFromToken(token);
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return null;
-    }
 }
+

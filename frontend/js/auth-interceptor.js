@@ -1,6 +1,9 @@
- // 配置后端 API 基础地址
+﻿ // 配置后端 API 基础地址
 axios.defaults.baseURL = 'http://localhost:8080';
 axios.defaults.timeout = 10000;
+
+// 配置跨域请求携带凭证（重要！）
+axios.defaults.withCredentials = true;
 
 // http request 拦截器
 axios.interceptors.request.use(
