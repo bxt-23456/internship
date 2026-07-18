@@ -200,11 +200,41 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public boolean updateUserInfo(User user) {
-        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
-        updateWrapper.eq(User::getId, user.getId());
+    public String updateUserInfo(User user) {
+        // 根据phone查询id
+        String phone = user.getPhone();
+        if (phone == null || phone.isEmpty()) {
+            return "手机号不能为空";
+        }
 
-        // 只更新非空字段
+        LambdaQueryWrapper<User> phoneQuery = new LambdaQueryWrapper<>();
+        phoneQuery.eq(User::getPhone, phone);
+        User dbUser = this.getOne(phoneQuery);
+        if (dbUser == null) {
+            return "用户不存在";
+        }
+
+        Long userId = dbUser.getId();
+
+        // 如果要修改用户名，检查新用户名是否已被其他用户使用
+        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
+            if (!user.getUsername().equals(dbUser.getUsername())) {
+                LambdaQueryWrapper<User> usernameQuery = new LambdaQueryWrapper<>();
+                usernameQuery.eq(User::getUsername, user.getUsername());
+                usernameQuery.ne(User::getId, userId);
+                if (this.count(usernameQuery) > 0) {
+                    return "该用户名已被使用";
+                }
+            }
+        }
+
+        // 根据id更新非空字段
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(User::getId, userId);
+
+        if (user.getUsername() != null && !user.getUsername().isEmpty()) {
+            updateWrapper.set(User::getUsername, user.getUsername());
+        }
         if (user.getRealName() != null) {
             updateWrapper.set(User::getRealName, user.getRealName());
         }
@@ -217,13 +247,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user.getEmail() != null) {
             updateWrapper.set(User::getEmail, user.getEmail());
         }
-        if (user.getAvatar() != null) {
-            updateWrapper.set(User::getAvatar, user.getAvatar());
-        }
 
         updateWrapper.set(User::getUpdateTime, LocalDateTime.now());
 
-        return this.update(updateWrapper);
+        boolean success = this.update(updateWrapper);
+        return success ? "更新成功" : "更新失败";
     }
 
     @Override

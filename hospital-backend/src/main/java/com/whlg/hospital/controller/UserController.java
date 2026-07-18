@@ -109,10 +109,12 @@ public class UserController {
      */
     @GetMapping("/info")
     public R<User> getUserInfo(HttpServletRequest request) {
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        User sessionUser = (User) request.getSession().getAttribute("user");
+        if (sessionUser == null) {
             return R.createError(20001, "请先登录");
         }
+        // 从数据库查询完整用户信息
+        User user = userService.getUserInfo(sessionUser.getId());
         return R.createSuccess(user);
     }
 
@@ -126,29 +128,35 @@ public class UserController {
     }
 
     /**
-     * 更新用户信息
+     * 更新用户信息（根据phone查询id，再根据id修改）
      */
-    @PutMapping("/update")
+    @PutMapping("/info")
     public R<Boolean> updateUser(@RequestBody User user, HttpServletRequest request) {
         User currentUser = (User) request.getSession().getAttribute("user");
         if (currentUser == null) {
             return R.createError(20001, "请先登录");
         }
 
-        user.setId(currentUser.getId());
-        boolean success = userService.updateUserInfo(user);
-        if (success) {
+        // 根据session中的用户id查询完整用户信息（含phone）
+        User dbUser = userService.getUserInfo(currentUser.getId());
+        if (dbUser == null || dbUser.getPhone() == null) {
+            return R.createError(20001, "用户信息异常，请重新登录");
+        }
+
+        // 根据phone查询id
+        String phone = dbUser.getPhone();
+        user.setPhone(phone);
+
+        String result = userService.updateUserInfo(user);
+        if ("更新成功".equals(result)) {
             // 更新Session中的用户信息
             if (user.getUsername() != null) {
                 currentUser.setUsername(user.getUsername());
             }
-            if (user.getAvatar() != null) {
-                currentUser.setAvatar(user.getAvatar());
-            }
             request.getSession().setAttribute("user", currentUser);
             return R.createSuccess(true);
         } else {
-            return R.createError("更新失败");
+            return R.createError(result);
         }
     }
 

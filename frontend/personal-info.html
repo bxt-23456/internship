@@ -273,9 +273,8 @@
                             <span class="required">*</span>用户名
                         </label>
                         <div class="form-input">
-                            <input type="text" v-model="formData.username" readonly />
+                            <input type="text" v-model="formData.username" placeholder="请输入用户名" />
                         </div>
-                        <span class="form-hint">用户名不可修改</span>
                     </div>
 
                     <div class="form-item">
@@ -389,6 +388,10 @@
                 },
                 saveInfo() {
                     // 表单验证
+                    if (!this.formData.username || !this.formData.username.trim()) {
+                        alert('请输入用户名');
+                        return;
+                    }
                     if (!this.formData.realName || !this.formData.realName.trim()) {
                         alert('请输入真实姓名');
                         return;
@@ -408,8 +411,10 @@
                         return;
                     }
 
-                    // 调用后端更新接口
+                    // 调用后端更新接口（根据phone查询id，再根据id修改）
                     axios.put('/user/info', {
+                        phone: this.formData.phone,
+                        username: this.formData.username,
                         realName: this.formData.realName,
                         gender: parseInt(this.formData.gender),
                         birthday: this.formData.birthday,
@@ -420,6 +425,7 @@
                             this.originalData = JSON.parse(JSON.stringify(this.formData));
                             // 更新localStorage中的用户信息
                             const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+                            userInfo.username = this.formData.username;
                             userInfo.realName = this.formData.realName;
                             userInfo.gender = parseInt(this.formData.gender);
                             userInfo.birthday = this.formData.birthday;
