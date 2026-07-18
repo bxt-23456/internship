@@ -43,11 +43,11 @@ public interface UserService extends IService<User> {
     User getUserInfo(Long userId);
 
     /**
-     * 更新用户个人信息
-     * @param user 用户信息
-     * @return 更新结果
+     * 更新用户个人信息（根据phone查询id，再根据id修改）
+     * @param user 用户信息（需包含phone）
+     * @return 更新结果消息，成功返回"更新成功"，失败返回原因
      */
-    boolean updateUserInfo(User user);
+    String updateUserInfo(User user);
 
     /**
      * 修改密码
