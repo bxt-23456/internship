@@ -7,15 +7,14 @@
 
     <!-- 查询医院列表（支持分页和科室筛选） -->
     <select id="selectHospitals" resultType="com.whlg.hospital.vo.HospitalVo">
-        SELECT h.id, h.name, h.level, h.address, h.phone, h.intro, h.image,
-               h.province, h.city, h.department_count, h.doctor_count, h.follow_count, h.status,
-               (SELECT COUNT(*) FROM t_doctor d WHERE d.hospital_id = h.id AND d.status = 1) AS realDoctorCount
+        SELECT h.id, h.name, h.level, h.address, h.phone, h.intro, h.image, 
+               h.province, h.city, h.department_count, h.doctor_count, h.follow_count, h.status
         FROM t_hospital h
         <if test="departmentId != null">
             INNER JOIN t_hospital_department hd ON h.id = hd.hospital_id
             WHERE hd.department_id = #{departmentId}
         </if>
-        ORDER BY realDoctorCount DESC, h.follow_count DESC
+        ORDER BY h.follow_count DESC
         LIMIT #{offset}, #{limit}
     </select>
 

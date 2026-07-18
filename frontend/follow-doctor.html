@@ -327,7 +327,8 @@
                 activeMenu: 'followDoctor',
                 currentPage: 1,
                 pageSize: 5,
-                doctors: []
+                doctors: [],
+                loading: true
             },
             computed: {
                 totalPages() {
@@ -381,33 +382,42 @@
                         window.location.href = 'my-feedback.html';
                     }
                 },
-                unfollowDoctor(id) {
+                async unfollowDoctor(id) {
                     if (confirm('确定取消关注该医生吗？')) {
-                        axios.post('/follow/toggle', null, {
-                            params: { followType: 2, followId: id }
-                        }).then(res => {
-                            if (res.data.flag) {
-                                // 取消关注成功，重新加载列表
+                        try {
+                            const response = await axios.post('/follow/toggle', null, {
+                                params: { followType: 2, followId: id }
+                            });
+                            if (response.data.code === 20000) {
+                                this.doctors = this.doctors.filter(d => d.id !== id);
+                                if (this.currentPage > this.totalPages && this.currentPage > 1) {
+                                    this.currentPage--;
+                                }
                                 alert('取消关注成功');
-                                this.loadDoctors();
                             } else {
-                                alert(res.data.message || '操作失败');
+                                alert(response.data.message || '操作失败');
                             }
-                        }).catch(() => {
-                            alert('网络错误，请稍后重试');
-                        });
+                        } catch (error) {
+                            console.error('取消关注失败:', error);
+                            alert('操作失败，请检查网络或登录状态');
+                        }
                     }
                 },
-                loadDoctors() {
-                    axios.get('/follow/doctors').then(res => {
-                        if (res.data.flag) {
-                            this.doctors = res.data.data || [];
+                async loadDoctors() {
+                    this.loading = true;
+                    try {
+                        const response = await axios.get('/follow/doctors');
+                        if (response.data.code === 20000) {
+                            this.doctors = response.data.data || [];
                         } else {
-                            alert(res.data.message || '获取关注医生列表失败');
+                            alert(response.data.message || '加载失败，请先登录');
                         }
-                    }).catch(() => {
-                        alert('网络错误，请稍后重试');
-                    });
+                    } catch (error) {
+                        console.error('加载关注医生列表失败:', error);
+                        alert('加载失败，请检查网络或登录状态');
+                    } finally {
+                        this.loading = false;
+                    }
                 }
             },
             mounted() {

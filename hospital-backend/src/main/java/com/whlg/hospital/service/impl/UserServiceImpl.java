@@ -6,13 +6,16 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.whlg.hospital.entity.User;
 import com.whlg.hospital.mapper.UserMapper;
 import com.whlg.hospital.service.UserService;
+import com.whlg.hospital.util.AliyunSmsUtil;
 import com.whlg.hospital.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用户Service实现类
@@ -23,9 +26,79 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private AliyunSmsUtil aliyunSmsUtil;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    /** Redis中验证码的key前缀 */
+    private static final String SMS_CODE_PREFIX = "sms:code:";
+
+    /** 短信签名 */
+    private static final String SMS_SIGN_NAME = "速通互联验证码";
+
+    /** 短信模板CODE */
+    private static final String SMS_TEMPLATE_CODE = "100001";
+
     @Override
-    public Map<String, Object> register(String phone, String password, String username) {
+    public Map<String, Object> sendVerifyCode(String phone) {
         Map<String, Object> result = new HashMap<>();
+
+        // 检查手机号是否已注册
+        LambdaQueryWrapper<User> phoneQuery = new LambdaQueryWrapper<>();
+        phoneQuery.eq(User::getPhone, phone);
+        if (this.count(phoneQuery) > 0) {
+            result.put("success", false);
+            result.put("message", "该手机号已注册");
+            return result;
+        }
+
+        try {
+            // 生成6位验证码
+            String code = AliyunSmsUtil.generateVerificationCode();
+
+            // 存入Redis，5分钟过期（先存储，确保验证码可用）
+            String redisKey = SMS_CODE_PREFIX + phone;
+            redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
+
+            // 发送短信
+            try {
+                String templateParam = "{\"code\":\"" + code + "\",\"min\":\"5\"}";
+                aliyunSmsUtil.sendSmsVerifyCode(phone, SMS_SIGN_NAME, SMS_TEMPLATE_CODE, templateParam);
+            } catch (Exception smsException) {
+                // 短信发送失败不影响验证码存储，打印日志继续
+                System.err.println("短信发送异常（验证码已存入Redis）: " + smsException.getMessage());
+            }
+
+            result.put("success", true);
+            result.put("message", "验证码已发送到手机，请注意查收");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", "验证码发送失败，请稍后重试");
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> register(String phone, String password, String username, String code) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 校验验证码
+        String redisKey = SMS_CODE_PREFIX + phone;
+        Object cachedCode = redisTemplate.opsForValue().get(redisKey);
+        if (cachedCode == null) {
+            result.put("success", false);
+            result.put("message", "验证码已过期，请重新获取");
+            return result;
+        }
+        if (!cachedCode.toString().equals(code)) {
+            result.put("success", false);
+            result.put("message", "验证码错误");
+            return result;
+        }
 
         // 检查手机号是否已注册
         LambdaQueryWrapper<User> phoneQuery = new LambdaQueryWrapper<>();
@@ -58,6 +131,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUpdateTime(LocalDateTime.now());
 
         this.save(user);
+
+        // 注册成功，删除已使用的验证码
+        redisTemplate.delete(redisKey);
 
         result.put("success", true);
         result.put("message", "注册成功");

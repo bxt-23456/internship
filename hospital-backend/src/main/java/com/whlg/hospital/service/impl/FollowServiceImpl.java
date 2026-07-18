@@ -1,8 +1,10 @@
 package com.whlg.hospital.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.whlg.hospital.entity.Doctor;
 import com.whlg.hospital.entity.Follow;
 import com.whlg.hospital.entity.Hospital;
+import com.whlg.hospital.mapper.DoctorMapper;
 import com.whlg.hospital.mapper.FollowMapper;
 import com.whlg.hospital.mapper.HospitalMapper;
 import com.whlg.hospital.service.FollowService;
@@ -23,9 +25,12 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
 
     @Autowired
     private FollowMapper followMapper;
-    
+
     @Autowired
     private HospitalMapper hospitalMapper;
+
+    @Autowired
+    private DoctorMapper doctorMapper;
 
     @Override
     @Transactional
@@ -93,7 +98,14 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                 hospital.setFollowCount(newCount);
                 hospitalMapper.updateById(hospital);
             }
+        } else if (followType == 2) { // 医生
+            Doctor doctor = doctorMapper.selectById(followId);
+            if (doctor != null) {
+                int newCount = doctor.getFollowCount() + delta;
+                if (newCount < 0) newCount = 0;
+                doctor.setFollowCount(newCount);
+                doctorMapper.updateById(doctor);
+            }
         }
-        // 可以扩展医生、疾病等类型的更新逻辑
     }
 }

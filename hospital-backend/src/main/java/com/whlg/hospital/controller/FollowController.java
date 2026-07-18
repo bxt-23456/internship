@@ -13,7 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
- * 鍏虫敞鎺у埗鍣? */
+ * 关注控制器
+ */
 @RestController
 @RequestMapping("/follow")
 public class FollowController {
@@ -22,53 +23,52 @@ public class FollowController {
     private FollowService followService;
 
     /**
-     * 鍒囨崲鍏虫敞鐘舵€侊紙鍏虫敞/鍙栨秷鍏虫敞锛?     */
+     * 切换关注状态（关注/取消关注）
+     */
     @PostMapping("/toggle")
-    
     public R<Boolean> toggleFollow(
             @RequestParam Integer followType,
             @RequestParam Long followId,
             HttpServletRequest request) {
-        // 浠巗ession鑾峰彇鐢ㄦ埛淇℃伅
+        // 从session获取用户信息
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
-            return R.createError(20001, "璇峰厛鐧诲綍");
+            return R.createError(20001, "请先登录");
         }
-        
+
         boolean followed = followService.toggleFollow(user.getId(), followType, followId);
         return R.createSuccess(followed);
     }
 
     /**
-     * 妫€鏌ユ槸鍚﹀凡鍏虫敞
+     * 检查是否已关注
      */
     @GetMapping("/check")
-    
     public R<Boolean> checkFollow(
             @RequestParam Integer followType,
             @RequestParam Long followId,
             HttpServletRequest request) {
-        // 浠巗ession鑾峰彇鐢ㄦ埛淇℃伅
+        // 从session获取用户信息
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
             return R.createSuccess(false);
         }
-        
+
         boolean followed = followService.isFollowed(user.getId(), followType, followId);
         return R.createSuccess(followed);
     }
 
     /**
-     * 鑾峰彇鍏虫敞鐨勫尰闄㈠垪琛?     */
+     * 获取关注的医院列表
+     */
     @GetMapping("/hospitals")
-    
     public R<List<HospitalVo>> getFollowedHospitals(HttpServletRequest request) {
-        // 浠巗ession鑾峰彇鐢ㄦ埛淇℃伅
+        // 从session获取用户信息
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
-            return R.createError(20001, "璇峰厛鐧诲綍");
+            return R.createError(20001, "请先登录");
         }
-        
+
         List<HospitalVo> hospitals = followService.getFollowedHospitals(user.getId());
         return R.createSuccess(hospitals);
     }
@@ -78,6 +78,7 @@ public class FollowController {
      */
     @GetMapping("/doctors")
     public R<List<DoctorVo>> getFollowedDoctors(HttpServletRequest request) {
+        // 从session获取用户信息
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
             return R.createError(20001, "请先登录");
@@ -88,7 +89,7 @@ public class FollowController {
     }
 
     /**
-     * 鑾峰彇鍏虫敞鏁伴噺
+     * 获取关注数量
      */
     @GetMapping("/count")
     public R<Integer> getFollowCount(
@@ -98,4 +99,3 @@ public class FollowController {
         return R.createSuccess(count);
     }
 }
-
