@@ -20,4 +20,9 @@ public class DoctorServiceImpl extends ServiceImpl<DoctorMapper, Doctor> impleme
     public List<DoctorVo> listTopDoctorVo(int limit) {
         return doctorMapper.selectDoctorVoBy(limit);
     }
+
+    @Override
+    public List<DoctorVo> listDoctorsByHospital(Long hospitalId, Long departmentId) {
+        return doctorMapper.selectDoctorsByHospital(hospitalId, departmentId);
+    }
 }

@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>鍏虫敞鐨勫尰闄?- 鍋ュ悍涔嬭矾鍦ㄧ嚎鍖荤枟</title>
+    <script src="js/vue.js"></script>
+    <link rel="stylesheet" href="css/common.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+        }
+        /* 鍐呭鍖哄煙 */
+        .content {
+            width: 1200px;
+            margin: 30px auto;
+            display: flex;
+            gap: 25px;
+        }
+        /* 宸︿晶鑿滃崟 */
+        .sidebar {
+            width: 240px;
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .menu-group {
+            margin-bottom: 25px;
+        }
+        .menu-group:last-child {
+            margin-bottom: 0;
+        }
+        .menu-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 12px;
+            padding-left: 10px;
+            border-left: 4px solid #1e88e5;
+        }
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .menu-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #666;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+        .menu-item:hover {
+            background-color: #f0f7ff;
+            color: #1e88e5;
+        }
+        .menu-item.active {
+            background-color: #e3f2fd;
+            color: #1e88e5;
+            font-weight: 500;
+        }
+        .menu-item::before {
+            content: '鈻?;
+            margin-right: 8px;
+            font-size: 10px;
+            color: #999;
+        }
+        .menu-item.active::before {
+            color: #1e88e5;
+        }
+        /* 鍙充晶鍐呭 */
+        .main-content {
+            flex: 1;
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        .page-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e3f2fd;
+        }
+        /* 鍏虫敞鍒楄〃 */
+        .follow-list {
+            border: 1px solid #e8eef3;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .follow-item {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .follow-item:last-child {
+            border-bottom: none;
+        }
+        .follow-info {
+            display: flex;
+            gap: 20px;
+        }
+        .follow-info img {
+            width: 100px;
+            height: 80px;
+            border-radius: 6px;
+            object-fit: cover;
+        }
+        .follow-details {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .follow-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .follow-name-link {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1e88e5;
+            margin-bottom: 8px;
+            text-decoration: none;
+        }
+        .follow-name-link:hover {
+            color: #1565c0;
+            text-decoration: none;
+        }
+        .follow-desc {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        .follow-btn button {
+            padding: 6px 15px;
+            border: 1px solid #e8eef3;
+            background-color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .follow-btn button:hover {
+            border-color: #ef5350;
+            color: #ef5350;
+        }
+        /* 鍒嗛〉 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        .pagination button {
+            padding: 8px 16px;
+            border: 1px solid #e8eef3;
+            background-color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #666;
+        }
+        .pagination button:hover:not(:disabled) {
+            border-color: #1e88e5;
+            color: #1e88e5;
+        }
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination .page-number {
+            display: flex;
+            gap: 5px;
+        }
+        .pagination .page-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+        }
+        .pagination .page-btn.active {
+            background-color: #1e88e5;
+            color: white;
+            border-color: #1e88e5;
+        }
+        .pagination .page-info {
+            margin-left: 15px;
+            color: #999;
+            font-size: 14px;
+        }
+        /* 绌虹姸鎬?*/
+        .empty-state {
+            text-align: center;
+            padding: 80px 0;
+            color: #999;
+        }
+        /* 椤佃剼 */
+        .footer {
+            background-color: #1e88e5;
+            color: white;
+            padding: 40px 0;
+            margin-top: 40px;
+        }
+        .footer-content {
+            width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+        .footer-section h4 {
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #bbdefb;
+        }
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+        .footer-section ul li a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .footer-section ul li a:hover {
+            color: white;
+        }
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+        }
+    </style>
+    <script src="component/Header.vue.js"></script>
+    <script src="component/Sidebar.vue.js"></script>
+    <script src="component/Footer.vue.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- 椤堕儴瀵艰埅 -->
+        <header-component :active-nav="''"></header-component>
+
+        <!-- 鍐呭鍖哄煙 -->
+        <div class="content">
+            <!-- 宸︿晶鑿滃崟 -->
+            <sidebar-component 
+                :active-menu="activeMenu" 
+                @menu-change="handleMenuChange"
+            ></sidebar-component>
+
+            <!-- 鍙充晶鍐呭 -->
+            <div class="main-content">
+                <div class="page-title">鍏虫敞鐨勫尰闄?/div>
+                
+                <!-- 鍏虫敞鍒楄〃 -->
+                <div v-if="hospitals.length > 0" class="follow-list">
+                    <div v-for="hospital in currentPageHospitals" :key="hospital.id" class="follow-item">
+                        <div class="follow-info">
+                            <img :src="hospital.image" :alt="hospital.name">
+                            <div class="follow-details">
+                                <a :href="'hospital-detail.html?hospitalId=' + hospital.id" class="follow-name-link">{{ hospital.name }}</a>
+                                <div class="follow-desc">{{ hospital.level }}</div>
+                                <div class="follow-desc">鍦板潃锛歿{ hospital.address }}</div>
+                                <div class="follow-desc">鐢佃瘽锛歿{ hospital.phone }}</div>
+                            </div>
+                        </div>
+                        <div class="follow-btn">
+                            <button @click="unfollowHospital(hospital.id)">鍙栨秷鍏虫敞</button>
+                        </div>
+                    </div>
+                </div>
+                <div v-else class="empty-state">
+                    <p>鏆傛棤鍏虫敞鐨勫尰闄?/p>
+                </div>
+
+                <!-- 鍒嗛〉 -->
+                <div v-if="hospitals.length > 0 && totalPages > 1" class="pagination">
+                    <button @click="currentPage--" :disabled="currentPage === 1">涓婁竴椤?/button>
+                    <div class="page-number">
+                        <button 
+                            v-for="page in visiblePages" 
+                            :key="page" 
+                            :class="['page-btn', {active: currentPage === page}]"
+                            @click="currentPage = page"
+                        >
+                            {{ page }}
+                        </button>
+                    </div>
+                    <button @click="currentPage++" :disabled="currentPage === totalPages">涓嬩竴椤?/button>
+                    <span class="page-info">鍏?{{ totalPages }} 椤?/span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 椤佃剼 -->
+        <footer-component></footer-component>
+    </div>
+
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                activeMenu: 'followHospital',
+                currentPage: 1,
+                pageSize: 5,
+                hospitals: []
+            },
+            computed: {
+                totalPages() {
+                    return Math.ceil(this.hospitals.length / this.pageSize);
+                },
+                currentPageHospitals() {
+                    const start = (this.currentPage - 1) * this.pageSize;
+                    return this.hospitals.slice(start, start + this.pageSize);
+                },
+                visiblePages() {
+                    const pages = [];
+                    const total = this.totalPages;
+                    const current = this.currentPage;
+                    
+                    if (total <= 5) {
+                        for (let i = 1; i <= total; i++) pages.push(i);
+                    } else {
+                        if (current <= 3) {
+                            pages.push(1, 2, 3, 4, 5);
+                        } else if (current >= total - 2) {
+                            pages.push(total - 4, total - 3, total - 2, total - 1, total);
+                        } else {
+                            pages.push(current - 2, current - 1, current, current + 1, current + 2);
+                        }
+                    }
+                    return pages;
+                }
+            },
+            methods: {
+                handleMenuChange(menu) {
+                    this.activeMenu = menu;
+                    if (menu === 'myAppointment') {
+                        window.location.href = 'my-appointment.html';
+                    } else if (menu === 'myConsult') {
+                        window.location.href = 'my-consult.html';
+                    } else if (menu === 'myReviews') {
+                        window.location.href = 'my-reviews.html';
+                    } else if (menu === 'followDoctor') {
+                        window.location.href = 'follow-doctor.html';
+                    } else if (menu === 'followDisease') {
+                        window.location.href = 'follow-disease.html';
+                    } else if (menu === 'profile' || menu === 'personalInfo') {
+                        window.location.href = 'personal-info.html';
+                    } else if (menu === 'familyMembers') {
+                        window.location.href = 'family-members.html';
+                    } else if (menu === 'changePassword') {
+                        window.location.href = 'change-password.html';
+                    } else if (menu === 'myMessages') {
+                        window.location.href = 'my-messages.html';
+                    } else if (menu === 'myFeedback') {
+                        window.location.href = 'my-feedback.html';
+                    }
+                },
+                unfollowHospital(id) {
+                    if (confirm('纭畾鍙栨秷鍏虫敞璇ュ尰闄㈠悧锛?)) {
+                        this.hospitals = this.hospitals.filter(h => h.id !== id);
+                        if (this.currentPage > this.totalPages && this.currentPage > 1) {
+                            this.currentPage--;
+                        }
+                        alert('鍙栨秷鍏虫敞鎴愬姛');
+                    }
+                },
+                loadHospitals() {
+                    this.hospitals = [
+                        { 
+                            id: 1, 
+                            name: '鍖椾含鍗忓拰鍖婚櫌', 
+                            level: '涓夌骇鐢茬瓑', 
+                            address: '鍖椾含甯備笢鍩庡尯甯呭簻鍥?鍙?,
+                            phone: '010-69156114',
+                            image: 'img/hospital_100001977.jpg'
+                        },
+                        { 
+                            id: 2, 
+                            name: '涓婃捣鐟為噾鍖婚櫌', 
+                            level: '涓夌骇鐢茬瓑', 
+                            address: '涓婃捣甯傞粍娴﹀尯鐟為噾浜岃矾197鍙?,
+                            phone: '021-64370045',
+                            image: 'img/hospital_14616536073112.jpg'
+                        },
+                        { 
+                            id: 3, 
+                            name: '骞垮窞涓北鍖婚櫌', 
+                            level: '涓夌骇鐢茬瓑', 
+                            address: '骞垮窞甯傚ぉ娌冲尯澶╂渤璺?00鍙?,
+                            phone: '020-89896989',
+                            image: 'img/hospital_16043929044175.jpg'
+                        },
+                        { 
+                            id: 4, 
+                            name: '鏉窞娴欎竴鍖婚櫌', 
+                            level: '涓夌骇鐢茬瓑', 
+                            address: '鏉窞甯備笂鍩庡尯搴嗘槬璺?9鍙?,
+                            phone: '0571-87236114',
+                            image: 'img/hospital_16195932543164.png'
+                        },
+                        { 
+                            id: 5, 
+                            name: '鍗椾含榧撴ゼ鍖婚櫌', 
+                            level: '涓夌骇鐢茬瓑', 
+                            address: '鍗椾含甯傞紦妤煎尯涓北璺?21鍙?,
+                            phone: '025-83106666',
+                            image: 'img/hospital_100001977.jpg'
+                        },
+                        { 
+                            id: 6, 
+                            name: '姝︽眽鍚屾祹鍖婚櫌', 
+                            level: '涓夌骇鐢茬瓑', 
+                            address: '姝︽眽甯傜鍙ｅ尯瑙ｆ斁澶ч亾1095鍙?,
+                            phone: '027-83662688',
+                            image: 'img/hospital_14616536073112.jpg'
+                        }
+                    ];
+                }
+            },
+            mounted() {
+                this.loadHospitals();
+            }
+        });
+    </script>
+</body>
+</html>
+

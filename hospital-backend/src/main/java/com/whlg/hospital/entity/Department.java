@@ -3,54 +3,46 @@ package com.whlg.hospital.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
 /**
  * 科室表
  */
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @TableName("t_department")
 public class Department {
-    
-    /**
-     * 科室ID
-     */
+
     @TableId(type = IdType.AUTO)
     private Long id;
-    
-    /**
-     * 科室名称
-     */
     private String name;
-    
-    /**
-     * 科室描述
-     */
     private String description;
-    
-    /**
-     * 父级科室ID
-     */
     private Long parentId;
-    
-    /**
-     * 排序
-     */
     private Integer sortOrder;
-    
-    /**
-     * 状态: 1正常 0禁用
-     */
     private Integer status;
-    
-    /**
-     * 创建时间
-     */
     private LocalDateTime createTime;
+
+    public Department() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public Long getParentId() { return parentId; }
+    public void setParentId(Long parentId) { this.parentId = parentId; }
+
+    public Integer getSortOrder() { return sortOrder; }
+    public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+
+    public Integer getStatus() { return status; }
+    public void setStatus(Integer status) { this.status = status; }
+
+    @JsonIgnore
+    public LocalDateTime getCreateTime() { return createTime; }
+    public void setCreateTime(LocalDateTime createTime) { this.createTime = createTime; }
 }
