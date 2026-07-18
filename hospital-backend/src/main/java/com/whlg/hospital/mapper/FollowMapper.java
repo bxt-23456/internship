@@ -22,8 +22,8 @@ public interface FollowMapper extends BaseMapper<Follow> {
      * @param followId 关注对象ID
      * @return 关注记录，如果不存在返回null
      */
-    Follow selectByUserAndTarget(@Param("userId") Long userId, 
-                                 @Param("followType") Integer followType, 
+    Follow selectByUserAndTarget(@Param("userId") Long userId,
+                                 @Param("followType") Integer followType,
                                  @Param("followId") Long followId);
 
     /**

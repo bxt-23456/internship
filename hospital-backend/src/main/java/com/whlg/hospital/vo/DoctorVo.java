@@ -6,10 +6,9 @@ public class DoctorVo {
     private String doctorName;
     private String title;
     private String avatar;
-    private Long hospitalId;
     private String hospitalName;
-    private Long departmentId;
     private String departmentName;
+    private Long departmentId;
 
     public DoctorVo() {}
 

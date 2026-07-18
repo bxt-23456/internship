@@ -346,9 +346,6 @@
                     if (!this.form.captcha) {
                         this.errors.captcha = '请输入验证码';
                         isValid = false;
-                    } else if (this.form.captcha !== this.generatedCaptcha) {
-                        this.errors.captcha = '验证码错误';
-                        isValid = false;
                     }
 
                     if (!this.form.agree) {
@@ -366,15 +363,34 @@
                     }
 
                     this.captchaDisabled = true;
-                    this.generatedCaptcha = Math.floor(100000 + Math.random() * 900000).toString();
-                    
-                    alert(`验证码已发送，您的验证码是：${this.generatedCaptcha}`);
+                    this.showError = false;
+                    this.showSuccess = false;
+
+                    // 调用后端发送验证码接口
+                    axios.post('/user/sendCode', {
+                        phone: this.form.phone
+                    }).then(res => {
+                        if (res.data.flag) {
+                            this.successMessage = '验证码已发送到手机，请注意查收';
+                            this.showSuccess = true;
+                        } else {
+                            this.errorMessage = res.data.message || '验证码发送失败';
+                            this.showError = true;
+                            this.captchaDisabled = false;
+                            return;
+                        }
+                    }).catch(err => {
+                        this.errorMessage = '网络错误，请稍后重试';
+                        this.showError = true;
+                        this.captchaDisabled = false;
+                        return;
+                    });
 
                     let count = this.captchaCountdown;
                     const timer = setInterval(() => {
                         count--;
                         this.captchaText = `${count}秒后重发`;
-                        
+
                         if (count <= 0) {
                             clearInterval(timer);
                             this.captchaDisabled = false;
@@ -391,11 +407,12 @@
                     this.showError = false;
                     this.showSuccess = false;
 
-                    // 调用后端注册接口
+                    // 调用后端注册接口，包含验证码
                     axios.post('/user/register', {
                         phone: this.form.phone,
                         password: this.form.password,
-                        username: this.form.phone
+                        username: this.form.phone,
+                        code: this.form.captcha
                     }).then(res => {
                         this.loading = false;
                         if (res.data.flag) {

@@ -11,13 +11,21 @@ import java.util.Map;
 public interface UserService extends IService<User> {
 
     /**
+     * 发送短信验证码
+     * @param phone 手机号
+     * @return 发送结果
+     */
+    Map<String, Object> sendVerifyCode(String phone);
+
+    /**
      * 用户注册
      * @param phone 手机号
      * @param password 密码
      * @param username 用户名（可选，默认使用手机号）
+     * @param code 短信验证码
      * @return 注册结果
      */
-    Map<String, Object> register(String phone, String password, String username);
+    Map<String, Object> register(String phone, String password, String username, String code);
 
     /**
      * 用户登录

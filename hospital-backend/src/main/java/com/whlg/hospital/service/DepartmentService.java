@@ -16,11 +16,4 @@ public interface DepartmentService extends IService<Department> {
      * @return 科室列表
      */
     List<Department> listByIds(List<Long> ids);
-
-    /**
-     * 根据父级ID查询子科室列表
-     * @param parentId 父级科室ID，传0或null查一级科室
-     * @return 科室列表
-     */
-    List<Department> listByParentId(Long parentId);
 }

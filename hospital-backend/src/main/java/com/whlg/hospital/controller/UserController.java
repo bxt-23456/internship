@@ -12,7 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 /**
- * 鐢ㄦ埛鎺у埗鍣? */
+ * 用户控制器
+ */
 
 @RestController
 @RequestMapping("/user")
@@ -25,22 +26,44 @@ public class UserController {
     private JwtUtil jwtUtil;
 
     /**
-     * 鐢ㄦ埛娉ㄥ唽
+     * 发送短信验证码
+     */
+    @PostMapping("/sendCode")
+    public R<String> sendCode(@RequestBody Map<String, String> params) {
+        String phone = params.get("phone");
+        if (phone == null || phone.isEmpty()) {
+            return R.createError("手机号不能为空");
+        }
+
+        Map<String, Object> result = userService.sendVerifyCode(phone);
+        if ((Boolean) result.get("success")) {
+            return R.createSuccess((String) result.get("message"));
+        } else {
+            return R.createError((String) result.get("message"));
+        }
+    }
+
+    /**
+     * 用户注册
      */
     @PostMapping("/register")
     public R<Map<String, Object>> register(@RequestBody Map<String, String> params) {
         String phone = params.get("phone");
         String password = params.get("password");
         String username = params.get("username");
+        String code = params.get("code");
 
         if (phone == null || phone.isEmpty()) {
-            return R.createError("鎵嬫満鍙蜂笉鑳戒负绌?");
+            return R.createError("手机号不能为空");
         }
         if (password == null || password.isEmpty()) {
-            return R.createError("瀵嗙爜涓嶈兘涓虹┖");
+            return R.createError("密码不能为空");
+        }
+        if (code == null || code.isEmpty()) {
+            return R.createError("验证码不能为空");
         }
 
-        Map<String, Object> result = userService.register(phone, password, username);
+        Map<String, Object> result = userService.register(phone, password, username, code);
         if ((Boolean) result.get("success")) {
             return R.createSuccess(result);
         } else {
@@ -49,7 +72,7 @@ public class UserController {
     }
 
     /**
-     * 鐢ㄦ埛鐧诲綍
+     * 用户登录
      */
     @PostMapping("/login")
     public R<Map<String, Object>> login(@RequestBody Map<String, String> params, HttpServletRequest request) {
@@ -57,15 +80,16 @@ public class UserController {
         String password = params.get("password");
 
         if (phone == null || phone.isEmpty()) {
-            return R.createError("鎵嬫満鍙蜂笉鑳戒负绌?");
+            return R.createError("手机号不能为空");
         }
         if (password == null || password.isEmpty()) {
-            return R.createError("瀵嗙爜涓嶈兘涓虹┖");
+            return R.createError("密码不能为空");
         }
 
         Map<String, Object> result = userService.login(phone, password);
         if ((Boolean) result.get("success")) {
-            // 灏嗙敤鎴蜂俊鎭瓨鍌ㄥ埌Session涓?            @SuppressWarnings("unchecked")
+            // 将用户信息存储到Session中
+            @SuppressWarnings("unchecked")
             Map<String, Object> userInfo = (Map<String, Object>) result.get("userInfo");
             if (userInfo != null) {
                 User user = new User();
@@ -81,39 +105,40 @@ public class UserController {
     }
 
     /**
-     * 鑾峰彇褰撳墠鐧诲綍鐢ㄦ埛淇℃伅
+     * 获取当前登录用户信息
      */
     @GetMapping("/info")
     public R<User> getUserInfo(HttpServletRequest request) {
         User user = (User) request.getSession().getAttribute("user");
         if (user == null) {
-            return R.createError(20001, "璇峰厛鐧诲綍");
+            return R.createError(20001, "请先登录");
         }
         return R.createSuccess(user);
     }
 
     /**
-     * 閫€鍑虹櫥褰?     */
+     * 退出登录
+     */
     @PostMapping("/logout")
     public R<String> logout(HttpServletRequest request) {
         request.getSession().invalidate();
-        return R.createSuccess("閫€鍑烘垚鍔?");
+        return R.createSuccess("退出成功");
     }
 
     /**
-     * 鏇存柊鐢ㄦ埛淇℃伅
+     * 更新用户信息
      */
     @PutMapping("/update")
     public R<Boolean> updateUser(@RequestBody User user, HttpServletRequest request) {
         User currentUser = (User) request.getSession().getAttribute("user");
         if (currentUser == null) {
-            return R.createError(20001, "璇峰厛鐧诲綍");
+            return R.createError(20001, "请先登录");
         }
-        
+
         user.setId(currentUser.getId());
         boolean success = userService.updateUserInfo(user);
         if (success) {
-            // 鏇存柊Session涓殑鐢ㄦ埛淇℃伅
+            // 更新Session中的用户信息
             if (user.getUsername() != null) {
                 currentUser.setUsername(user.getUsername());
             }
@@ -123,29 +148,28 @@ public class UserController {
             request.getSession().setAttribute("user", currentUser);
             return R.createSuccess(true);
         } else {
-            return R.createError("鏇存柊澶辫触");
+            return R.createError("更新失败");
         }
     }
 
     /**
-     * 淇敼瀵嗙爜
+     * 修改密码
      */
     @PostMapping("/changePassword")
     public R<String> changePassword(@RequestBody Map<String, String> params, HttpServletRequest request) {
         User currentUser = (User) request.getSession().getAttribute("user");
         if (currentUser == null) {
-            return R.createError(20001, "璇峰厛鐧诲綍");
+            return R.createError(20001, "请先登录");
         }
-        
+
         String oldPassword = params.get("oldPassword");
         String newPassword = params.get("newPassword");
-        
+
         String result = userService.changePassword(currentUser.getId(), oldPassword, newPassword);
-        if ("瀵嗙爜淇敼鎴愬姛".equals(result)) {
+        if ("密码修改成功".equals(result)) {
             return R.createSuccess(result);
         } else {
             return R.createError(result);
         }
     }
 }
-
