@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 鍖荤敓鎺у埗鍣? */
+ * 医生控制器
+ */
 
 @RestController
 @RequestMapping("/doctor")
@@ -19,10 +20,10 @@ public class DoctorController {
     private DoctorService doctorService;
 
     /**
-     * 鑾峰彇鍖婚櫌鐨勫尰鐢熷垪琛紙鏀寔绉戝绛涢€夛級
-     * @param hospitalId 鍖婚櫌ID
-     * @param departmentId 绉戝ID锛堝彲閫夛級
-     * @return 鍖荤敓鍒楄〃
+     * 获取医院的医生列表（支持科室筛选）
+     * @param hospitalId 医院ID
+     * @param departmentId 科室ID（可选）
+     * @return 医生列表
      */
     @GetMapping("/list")
     public R<List<DoctorVo>> listDoctors(
@@ -32,4 +33,3 @@ public class DoctorController {
         return R.createSuccess(doctors);
     }
 }
-
