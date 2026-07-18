@@ -2,7 +2,10 @@ package com.whlg.hospital.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.whlg.hospital.entity.Doctor;
+import com.whlg.hospital.vo.DoctorDetailVo;
+import com.whlg.hospital.vo.DoctorQueryVo;
 import com.whlg.hospital.vo.DoctorVo;
+import com.whlg.hospital.vo.PageResult;
 
 import java.util.List;
 
@@ -14,4 +17,9 @@ public interface DoctorService extends IService<Doctor> {
     //根据医院ID查询医生列表（可选按科室筛选）
     public List<DoctorVo> listDoctorsByHospital(Long hospitalId, Long departmentId);
 
+    //分页查询医生（支持多条件筛选）
+    public PageResult<DoctorVo> pageDoctor(DoctorQueryVo query);
+
+    //根据ID查询医生详情
+    public DoctorDetailVo getDoctorDetailById(Long id);
 }

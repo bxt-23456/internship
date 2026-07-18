@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <title>关注的医生 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
+    <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -279,11 +281,11 @@
                 <div v-if="doctors.length > 0" class="follow-list">
                     <div v-for="doctor in currentPageDoctors" :key="doctor.id" class="follow-item">
                         <div class="follow-info">
-                            <img :src="doctor.avatar" :alt="doctor.name">
+                            <img :src="doctor.avatar" :alt="doctor.doctorName">
                             <div class="follow-details">
-                                <a :href="'doctor-detail.html?id=' + doctor.id" class="follow-name-link">{{ doctor.name }}</a>
+                                <a :href="'doctor-detail.html?id=' + doctor.id" class="follow-name-link">{{ doctor.doctorName }}</a>
                                 <div class="follow-desc">{{ doctor.title }}</div>
-                                <div class="follow-desc">{{ doctor.hospital }} | {{ doctor.department }}</div>
+                                <div class="follow-desc">{{ doctor.hospitalName }} | {{ doctor.departmentName }}</div>
                             </div>
                         </div>
                         <div class="follow-btn">
@@ -381,76 +383,31 @@
                 },
                 unfollowDoctor(id) {
                     if (confirm('确定取消关注该医生吗？')) {
-                        this.doctors = this.doctors.filter(d => d.id !== id);
-                        if (this.currentPage > this.totalPages && this.currentPage > 1) {
-                            this.currentPage--;
-                        }
-                        alert('取消关注成功');
+                        axios.post('/follow/toggle', null, {
+                            params: { followType: 2, followId: id }
+                        }).then(res => {
+                            if (res.data.flag) {
+                                // 取消关注成功，重新加载列表
+                                alert('取消关注成功');
+                                this.loadDoctors();
+                            } else {
+                                alert(res.data.message || '操作失败');
+                            }
+                        }).catch(() => {
+                            alert('网络错误，请稍后重试');
+                        });
                     }
                 },
                 loadDoctors() {
-                    this.doctors = [
-                        { 
-                            id: 1, 
-                            name: '张明远', 
-                            title: '主任医师', 
-                            department: '心内科',
-                            hospital: '北京协和医院',
-                            consultCount: 5680,
-                            rating: 4.9,
-                            avatar: 'img/doctor-male-doc.jpg'
-                        },
-                        { 
-                            id: 2, 
-                            name: '李秀华', 
-                            title: '副主任医师', 
-                            department: '呼吸内科',
-                            hospital: '上海瑞金医院',
-                            consultCount: 4250,
-                            rating: 4.8,
-                            avatar: 'img/doctor-female-doc.jpg'
-                        },
-                        { 
-                            id: 3, 
-                            name: '王建国', 
-                            title: '主任医师', 
-                            department: '消化内科',
-                            hospital: '广州中山医院',
-                            consultCount: 3890,
-                            rating: 4.9,
-                            avatar: 'img/doctor-male-doc.jpg'
-                        },
-                        { 
-                            id: 4, 
-                            name: '陈美玲', 
-                            title: '主治医师', 
-                            department: '肾内科',
-                            hospital: '杭州浙一医院',
-                            consultCount: 2150,
-                            rating: 4.7,
-                            avatar: 'img/doctor-female-doc.jpg'
-                        },
-                        { 
-                            id: 5, 
-                            name: '张伟民', 
-                            title: '主任医师', 
-                            department: '内分泌科',
-                            hospital: '北京协和医院',
-                            consultCount: 6200,
-                            rating: 4.9,
-                            avatar: 'img/doctor-male-doc.jpg'
-                        },
-                        { 
-                            id: 6, 
-                            name: '刘芳华', 
-                            title: '副主任医师', 
-                            department: '血液科',
-                            hospital: '上海瑞金医院',
-                            consultCount: 3400,
-                            rating: 4.8,
-                            avatar: 'img/doctor-female-doc.jpg'
+                    axios.get('/follow/doctors').then(res => {
+                        if (res.data.flag) {
+                            this.doctors = res.data.data || [];
+                        } else {
+                            alert(res.data.message || '获取关注医生列表失败');
                         }
-                    ];
+                    }).catch(() => {
+                        alert('网络错误，请稍后重试');
+                    });
                 }
             },
             mounted() {

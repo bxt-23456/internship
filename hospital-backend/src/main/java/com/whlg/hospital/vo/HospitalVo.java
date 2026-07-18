@@ -16,6 +16,7 @@ public class HospitalVo {
     private String city;
     private Integer departmentCount;
     private Integer doctorCount;
+    private Integer realDoctorCount;
     private Integer followCount;
     private Integer status;
 
@@ -53,6 +54,9 @@ public class HospitalVo {
 
     public Integer getDoctorCount() { return doctorCount; }
     public void setDoctorCount(Integer doctorCount) { this.doctorCount = doctorCount; }
+
+    public Integer getRealDoctorCount() { return realDoctorCount; }
+    public void setRealDoctorCount(Integer realDoctorCount) { this.realDoctorCount = realDoctorCount; }
 
     public Integer getFollowCount() { return followCount; }
     public void setFollowCount(Integer followCount) { this.followCount = followCount; }

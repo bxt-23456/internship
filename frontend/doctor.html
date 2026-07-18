@@ -137,6 +137,60 @@
             font-size: 12px;
             line-height: 1.4;
         }
+        /* 筛选栏 */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-label {
+            font-size: 14px;
+            color: #666;
+            white-space: nowrap;
+        }
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #e8eef3;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #333;
+            background-color: #fafbfc;
+            outline: none;
+            cursor: pointer;
+            min-width: 160px;
+        }
+        .filter-select:focus {
+            border-color: #1e88e5;
+        }
+        .filter-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .filter-btn {
+            padding: 6px 14px;
+            border: 1px solid #e8eef3;
+            border-radius: 16px;
+            font-size: 13px;
+            color: #666;
+            background-color: #fafbfc;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-btn:hover {
+            border-color: #1e88e5;
+            color: #1e88e5;
+        }
+        .filter-btn.active {
+            background-color: #1e88e5;
+            color: white;
+            border-color: #1565c0;
+        }
         /* 分页 */
         .pagination {
             display: flex;
@@ -191,49 +245,24 @@
         .empty-state p {
             font-size: 16px;
         }
-        /* 页脚 */
-        .footer {
-            background-color: #1e88e5;
-            color: white;
+        /* 加载状态 */
+        .loading-state {
+            text-align: center;
             padding: 40px 0;
-            margin-top: 40px;
+            color: #999;
         }
-        .footer-content {
-            width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 30px;
-        }
-        .footer-section h4 {
-            margin-bottom: 15px;
-            font-size: 16px;
-            color: #bbdefb;
-        }
-        .footer-section ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        .footer-section ul li {
+        .loading-state .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e3f2fd;
+            border-top-color: #1e88e5;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
             margin-bottom: 10px;
         }
-        .footer-section ul li a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-        .footer-section ul li a:hover {
-            color: white;
-        }
-        .copyright {
-            text-align: center;
-            padding-top: 20px;
-            margin-top: 20px;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 13px;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
     <script src="component/Header.vue.js"></script>
@@ -249,12 +278,12 @@
             <!-- 科室选择 -->
             <div class="section">
                 <div class="section-title">选择科室</div>
-                
+
                 <!-- 一级科室 -->
                 <div class="primary-departments">
-                    <div 
-                        v-for="dept in primaryDepartments" 
-                        :key="dept.id" 
+                    <div
+                        v-for="dept in primaryDepartments"
+                        :key="dept.id"
                         :class="['dept-item', {active: selectedPrimary === dept.id}]"
                         @click="selectPrimary(dept.id)"
                     >
@@ -264,9 +293,9 @@
 
                 <!-- 二级科室 -->
                 <div v-if="selectedPrimary && selectedPrimary !== 0 && secondaryDepartments.length > 0" class="secondary-departments">
-                    <div 
-                        v-for="subDept in secondaryDepartments" 
-                        :key="subDept.id" 
+                    <div
+                        v-for="subDept in secondaryDepartments"
+                        :key="subDept.id"
                         :class="['sub-dept-item', {active: selectedSecondary === subDept.id}]"
                         @click="selectSecondary(subDept.id)"
                     >
@@ -279,21 +308,49 @@
                 </div>
             </div>
 
+            <!-- 筛选条件 -->
+            <div class="section">
+                <div class="filter-bar">
+                    <div class="filter-group">
+                        <span class="filter-label">医院：</span>
+                        <select class="filter-select" v-model="selectedHospital" @change="onFilterChange">
+                            <option value="0">全部医院</option>
+                            <option v-for="h in hospitals" :key="h.id" :value="h.id">{{ h.name }}</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <span class="filter-label">在线状态：</span>
+                        <div class="filter-btns">
+                            <span :class="['filter-btn', {active: selectedOnline === 0}]" @click="setOnline(0)">全部</span>
+                            <span :class="['filter-btn', {active: selectedOnline === 1}]" @click="setOnline(1)">在线</span>
+                            <span :class="['filter-btn', {active: selectedOnline === 2}]" @click="setOnline(2)">离线</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 医生列表 -->
             <div class="section">
                 <div class="section-title">
                     {{ selectedSecondaryName || '全部医生' }}
-                    <span v-if="selectedSecondaryName" style="font-weight: normal; font-size: 14px; color: #999; margin-left: 10px;">
+                    <span v-if="totalDoctors > 0" style="font-weight: normal; font-size: 14px; color: #999; margin-left: 10px;">
                         共 {{ totalDoctors }} 位医生
                     </span>
                 </div>
 
-                <div v-if="filteredDoctors.length > 0" class="doctor-list">
-                    <div v-for="doctor in currentPageDoctors" :key="doctor.id" class="doctor-item" @click="goToDetail(doctor.id)">
-                        <img :src="doctor.avatar" :alt="doctor.name" class="avatar">
-                        <h3>{{ doctor.name }}</h3>
+                <!-- 加载中 -->
+                <div v-if="loading" class="loading-state">
+                    <div class="spinner"></div>
+                    <p>加载中...</p>
+                </div>
+
+                <!-- 医生列表 -->
+                <div v-else-if="doctors.length > 0" class="doctor-list">
+                    <div v-for="doctor in doctors" :key="doctor.id" class="doctor-item" @click="goToDetail(doctor.id)">
+                        <img :src="doctor.avatar || 'img/doctor-male-doc.jpg'" :alt="doctor.doctorName" class="avatar">
+                        <h3>{{ doctor.doctorName }}</h3>
                         <div class="title">{{ doctor.title }}</div>
-                        <div class="hospital-dept">{{ doctor.hospital }} | {{ doctor.department }}</div>
+                        <div class="hospital-dept">{{ doctor.hospitalName }} | {{ doctor.departmentName }}</div>
                     </div>
                 </div>
 
@@ -302,12 +359,12 @@
                 </div>
 
                 <!-- 分页 -->
-                <div v-if="filteredDoctors.length > 0 && totalPages > 1" class="pagination">
+                <div v-if="totalDoctors > 0 && totalPages > 1" class="pagination">
                     <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
                     <div class="page-number">
-                        <button 
-                            v-for="page in visiblePages" 
-                            :key="page" 
+                        <button
+                            v-for="page in visiblePages"
+                            :key="page"
                             :class="['page-btn', {active: currentPage === page}]"
                             @click="goToPage(page)"
                         >
@@ -327,140 +384,51 @@
     </div>
 
     <script>
-        // Header和Footer组件已经在外部引入
+        // API基础地址
+        const API_BASE_URL = 'http://localhost:8080';
 
-        // 主应用
         new Vue({
             el: '#app',
             data: {
-                // 一级科室数据
-                primaryDepartments: [
-                    { id: 0, name: '全部' },
-                    { id: 1, name: '内科' },
-                    { id: 2, name: '外科' },
-                    { id: 3, name: '妇产科' },
-                    { id: 4, name: '儿科' },
-                    { id: 5, name: '骨科' },
-                    { id: 6, name: '神经科' },
-                    { id: 7, name: '皮肤科' },
-                    { id: 8, name: '眼科' },
-                    { id: 9, name: '耳鼻喉科' },
-                    { id: 10, name: '口腔科' }
-                ],
-                // 二级科室数据
-                departments: {
-                    1: [
-                        { id: 11, name: '心内科', parentId: 1 },
-                        { id: 12, name: '呼吸内科', parentId: 1 },
-                        { id: 13, name: '消化内科', parentId: 1 },
-                        { id: 14, name: '肾内科', parentId: 1 },
-                        { id: 15, name: '内分泌科', parentId: 1 },
-                        { id: 16, name: '血液科', parentId: 1 }
-                    ],
-                    2: [
-                        { id: 21, name: '普外科', parentId: 2 },
-                        { id: 22, name: '骨科', parentId: 2 },
-                        { id: 23, name: '心胸外科', parentId: 2 },
-                        { id: 24, name: '神经外科', parentId: 2 },
-                        { id: 25, name: '泌尿外科', parentId: 2 },
-                        { id: 26, name: '肝胆外科', parentId: 2 }
-                    ],
-                    3: [
-                        { id: 31, name: '妇科', parentId: 3 },
-                        { id: 32, name: '产科', parentId: 3 },
-                        { id: 33, name: '生殖医学中心', parentId: 3 }
-                    ],
-                    4: [
-                        { id: 41, name: '小儿内科', parentId: 4 },
-                        { id: 42, name: '小儿外科', parentId: 4 },
-                        { id: 43, name: '新生儿科', parentId: 4 }
-                    ],
-                    5: [
-                        { id: 51, name: '创伤骨科', parentId: 5 },
-                        { id: 52, name: '关节外科', parentId: 5 },
-                        { id: 53, name: '脊柱外科', parentId: 5 },
-                        { id: 54, name: '运动医学科', parentId: 5 }
-                    ],
-                    6: [
-                        { id: 61, name: '神经内科', parentId: 6 },
-                        { id: 62, name: '神经外科', parentId: 6 }
-                    ],
-                    7: [
-                        { id: 71, name: '皮肤科', parentId: 7 }
-                    ],
-                    8: [
-                        { id: 81, name: '眼科', parentId: 8 }
-                    ],
-                    9: [
-                        { id: 91, name: '耳鼻喉科', parentId: 9 }
-                    ],
-                    10: [
-                        { id: 101, name: '口腔科', parentId: 10 }
-                    ]
-                },
-                // 医生数据（关联二级科室）
-                allDoctors: [
-                    { id: 1, name: '张明远', department: '心内科', hospital: '北京协和医院', hospitalLevel: '三甲', experience: '30年', goodAt: '冠心病、高血压、心律失常等心血管疾病的诊治', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 11 },
-                    { id: 2, name: '李晓华', department: '妇科', hospital: '上海瑞金医院', hospitalLevel: '三甲', experience: '20年', goodAt: '高危妊娠、妇科肿瘤、微创手术', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 31 },
-                    { id: 3, name: '王建国', department: '骨科', hospital: '广州中山医院', hospitalLevel: '三甲', experience: '25年', goodAt: '脊柱侧弯、椎间盘突出、关节置换', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 52 },
-                    { id: 4, name: '陈美玲', department: '儿科', hospital: '杭州浙一医院', hospitalLevel: '三甲', experience: '15年', goodAt: '小儿呼吸、哮喘、过敏性疾病', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['医保定点', '三甲医院'], departmentId: 41 },
-                    { id: 5, name: '刘志强', department: '神经内科', hospital: '北京协和医院', hospitalLevel: '三甲', experience: '28年', goodAt: '脑血管病、帕金森、癫痫、头痛', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 61 },
-                    { id: 6, name: '赵雅琴', department: '呼吸内科', hospital: '上海瑞金医院', hospitalLevel: '三甲', experience: '22年', goodAt: '哮喘、慢阻肺、肺部感染', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 12 },
-                    { id: 7, name: '孙伟东', department: '消化内科', hospital: '广州中山医院', hospitalLevel: '三甲', experience: '26年', goodAt: '胃肠疾病、肝胆疾病、内镜诊疗', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 13 },
-                    { id: 8, name: '周丽华', department: '产科', hospital: '杭州浙一医院', hospitalLevel: '三甲', experience: '18年', goodAt: '高危妊娠、产前诊断、产科手术', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 32 },
-                    { id: 9, name: '吴明德', department: '骨科', hospital: '北京天坛医院', hospitalLevel: '三甲', experience: '24年', goodAt: '脊柱外科、脊柱微创手术', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 53 },
-                    { id: 10, name: '郑雪梅', department: '皮肤科', hospital: '上海华山医院', hospitalLevel: '三甲', experience: '16年', goodAt: '皮肤病、过敏性疾病、医学美容', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['医保定点', '三甲医院'], departmentId: 71 },
-                    { id: 11, name: '黄磊', department: '眼科', hospital: '广东省人民医院', hospitalLevel: '三甲', experience: '27年', goodAt: '白内障、青光眼、眼底病变', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 81 },
-                    { id: 12, name: '林静', department: '耳鼻喉科', hospital: '南京鼓楼医院', hospitalLevel: '三甲', experience: '19年', goodAt: '耳鼻喉疾病、头颈肿瘤', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 91 },
-                    { id: 13, name: '许文涛', department: '口腔科', hospital: '武汉同济医院', hospitalLevel: '三甲', experience: '23年', goodAt: '口腔修复、种植牙、正畸', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 101 },
-                    { id: 14, name: '马晓燕', department: '内分泌科', hospital: '成都华西医院', hospitalLevel: '三甲', experience: '17年', goodAt: '糖尿病、甲状腺疾病、代谢综合征', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 15 },
-                    { id: 15, name: '何建军', department: '神经外科', hospital: '西安西京医院', hospitalLevel: '三甲', experience: '29年', goodAt: '脑肿瘤、脑血管病、脊髓疾病', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 62 },
-                    { id: 16, name: '徐芳', department: '肾内科', hospital: '天津总医院', hospitalLevel: '三甲', experience: '14年', goodAt: '肾病、血液透析、腹膜透析', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['医保定点', '三甲医院'], departmentId: 14 }
-                ],
+                // 一级科室数据（从后端加载）
+                primaryDepartments: [],
+                // 二级科室数据（按一级科室ID缓存，从后端加载）
+                departments: {},
+                // 当前二级科室列表
+                secondaryDepartments: [],
+                // 医生数据（从后端API获取）
+                doctors: [],
+                // 医院列表（从后端加载）
+                hospitals: [],
                 // 选中状态
                 selectedPrimary: null,
                 selectedSecondary: null,
+                selectedHospital: 0,
+                selectedOnline: 0,
                 // 分页
                 currentPage: 1,
-                pageSize: 5
+                pageSize: 10,
+                totalDoctors: 0,
+                // 加载状态
+                loading: false
             },
             computed: {
-                // 获取二级科室列表
-                secondaryDepartments() {
-                    if (!this.selectedPrimary) return [];
-                    return this.departments[this.selectedPrimary] || [];
-                },
                 // 选中的二级科室名称
                 selectedSecondaryName() {
                     if (!this.selectedSecondary) return '';
                     const dept = this.secondaryDepartments.find(d => d.id === this.selectedSecondary);
                     return dept ? dept.name : '';
                 },
-                // 过滤后的医生列表
-                filteredDoctors() {
-                    if (!this.selectedSecondary) return this.allDoctors;
-                    return this.allDoctors.filter(d => d.departmentId === this.selectedSecondary);
-                },
-                // 总医生数
-                totalDoctors() {
-                    return this.filteredDoctors.length;
-                },
                 // 总页数
                 totalPages() {
                     return Math.ceil(this.totalDoctors / this.pageSize);
-                },
-                // 当前页医生
-                currentPageDoctors() {
-                    const start = (this.currentPage - 1) * this.pageSize;
-                    const end = start + this.pageSize;
-                    return this.filteredDoctors.slice(start, end);
                 },
                 // 显示的页码
                 visiblePages() {
                     const pages = [];
                     const total = this.totalPages;
                     const current = this.currentPage;
-                    
+
                     if (total <= 5) {
                         for (let i = 1; i <= total; i++) pages.push(i);
                     } else {
@@ -476,37 +444,186 @@
                 }
             },
             methods: {
-                selectPrimary(id) {
+                // 从后端加载医院列表
+                async loadHospitals() {
+                    try {
+                        var response = await axios.get(API_BASE_URL + '/hospital/list', {
+                            params: { page: 1, pageSize: 100 }
+                        });
+                        if (response.data && response.data.flag) {
+                            this.hospitals = response.data.data;
+                        }
+                    } catch (error) {
+                        console.error('加载医院列表失败:', error);
+                    }
+                },
+                // 筛选条件变化
+                onFilterChange() {
+                    this.currentPage = 1;
+                    this.loadDoctors();
+                },
+                // 设置在线状态
+                setOnline(val) {
+                    this.selectedOnline = parseInt(val);
+                    this.currentPage = 1;
+                    this.loadDoctors();
+                },
+                // 从后端加载一级科室
+                async loadPrimaryDepartments() {
+                    try {
+                        const response = await axios.get(`${API_BASE_URL}/department/list`, {
+                            params: { parentId: 0 }
+                        });
+                        if (response.data.flag) {
+                            this.primaryDepartments = [
+                                { id: 0, name: '全部' },
+                                ...response.data.data
+                            ];
+                        }
+                    } catch (error) {
+                        console.error('加载一级科室失败:', error);
+                    }
+                },
+                // 从后端加载二级科室
+                async loadChildDepartments(parentId) {
+                    // 已缓存则直接返回
+                    if (this.departments[parentId]) {
+                        this.secondaryDepartments = this.departments[parentId];
+                        return;
+                    }
+                    try {
+                        const response = await axios.get(`${API_BASE_URL}/department/list`, {
+                            params: { parentId: parentId }
+                        });
+                        if (response.data.flag) {
+                            this.departments[parentId] = response.data.data;
+                            this.secondaryDepartments = response.data.data;
+                        } else {
+                            this.departments[parentId] = [];
+                            this.secondaryDepartments = [];
+                        }
+                    } catch (error) {
+                        console.error('加载二级科室失败:', error);
+                        this.secondaryDepartments = [];
+                    }
+                },
+                // 选择一级科室
+                async selectPrimary(id) {
                     this.selectedPrimary = id;
                     this.selectedSecondary = null;
                     this.currentPage = 1;
+
+                    if (id === 0) {
+                        // "全部"：清空二级科室，加载所有医生
+                        this.secondaryDepartments = [];
+                        this.loadDoctors();
+                    } else {
+                        // 加载该一级科室下的二级科室
+                        await this.loadChildDepartments(id);
+                        // 加载该一级科室下所有子科室的医生
+                        this.loadDoctors();
+                    }
                 },
+                // 选择二级科室
                 selectSecondary(id) {
                     this.selectedSecondary = id;
                     this.currentPage = 1;
+                    this.loadDoctors();
                 },
+                // 上一页
                 prevPage() {
                     if (this.currentPage > 1) {
                         this.currentPage--;
+                        this.loadDoctors();
                     }
                 },
+                // 下一页
                 nextPage() {
                     if (this.currentPage < this.totalPages) {
                         this.currentPage++;
+                        this.loadDoctors();
                     }
                 },
+                // 跳转到指定页
                 goToPage(page) {
                     this.currentPage = page;
+                    this.loadDoctors();
                 },
+                // 跳转到医生详情页
                 goToDetail(id) {
                     window.location.href = 'doctor-detail.html?id=' + id;
+                },
+                // 从后端API加载医生列表
+                async loadDoctors() {
+                    this.loading = true;
+                    try {
+                        var params = {
+                            pageNum: this.currentPage,
+                            pageSize: this.pageSize
+                        };
+
+                        // 医院筛选
+                        var hospitalId = parseInt(this.selectedHospital);
+                        if (hospitalId > 0) {
+                            params.hospitalId = hospitalId;
+                        }
+                        // 在线状态筛选
+                        var onlineStatus = parseInt(this.selectedOnline);
+                        if (onlineStatus > 0) {
+                            params.onlineStatus = onlineStatus;
+                        }
+                        // 科室筛选
+                        if (this.selectedSecondary) {
+                            params.departmentIds = [this.selectedSecondary];
+                        } else if (this.selectedPrimary && this.selectedPrimary !== 0) {
+                            var ids = [this.selectedPrimary];
+                            var children = this.departments[this.selectedPrimary] || [];
+                            children.forEach(function(d) { ids.push(d.id); });
+                            params.departmentIds = ids;
+                        }
+
+                        console.log('请求参数:', JSON.stringify(params));
+                        const response = await axios.get(API_BASE_URL + '/doctor/page', {
+                            params: params,
+                            paramsSerializer: function(p) {
+                                var parts = [];
+                                for (var key in p) {
+                                    var val = p[key];
+                                    if (Array.isArray(val)) {
+                                        val.forEach(function(v) { parts.push(key + '=' + v); });
+                                    } else if (val !== undefined && val !== null) {
+                                        parts.push(key + '=' + val);
+                                    }
+                                }
+                                return parts.join('&');
+                            }
+                        });
+                        console.log('响应:', JSON.stringify(response.data));
+                        if (response.data && response.data.flag) {
+                            this.doctors = response.data.data.records || [];
+                            this.totalDoctors = response.data.data.total || 0;
+                        } else {
+                            this.doctors = [];
+                            this.totalDoctors = 0;
+                        }
+                    } catch (error) {
+                        console.error('加载医生列表失败:', error);
+                        this.doctors = [];
+                        this.totalDoctors = 0;
+                    } finally {
+                        this.loading = false;
+                    }
                 }
             },
-            mounted() {
-                // 默认选中第一个一级科室
-                if (this.primaryDepartments.length > 0) {
-                    this.selectPrimary(this.primaryDepartments[0].id);
-                }
+            async mounted() {
+                // 并行加载一级科室和医院列表
+                await Promise.all([
+                    this.loadPrimaryDepartments(),
+                    this.loadHospitals()
+                ]);
+                // 默认选中"全部"
+                this.selectedPrimary = 0;
+                this.loadDoctors();
             }
         });
     </script>

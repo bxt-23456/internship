@@ -6,6 +6,7 @@ import com.whlg.hospital.entity.Hospital;
 import com.whlg.hospital.mapper.FollowMapper;
 import com.whlg.hospital.mapper.HospitalMapper;
 import com.whlg.hospital.service.FollowService;
+import com.whlg.hospital.vo.DoctorVo;
 import com.whlg.hospital.vo.HospitalVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,11 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     @Override
     public List<HospitalVo> getFollowedHospitals(Long userId) {
         return followMapper.selectFollowedHospitals(userId);
+    }
+
+    @Override
+    public List<DoctorVo> getFollowedDoctors(Long userId) {
+        return followMapper.selectFollowedDoctors(userId);
     }
 
     @Override
