@@ -1,5 +1,6 @@
 package com.whlg.hospital.service;
 
+import com.whlg.hospital.vo.DoctorVo;
 import com.whlg.hospital.vo.HospitalVo;
 
 import java.util.List;
@@ -33,6 +34,13 @@ public interface FollowService {
      * @return 医院列表
      */
     List<HospitalVo> getFollowedHospitals(Long userId);
+
+    /**
+     * 获取用户关注的医生列表
+     * @param userId 用户ID
+     * @return 医生列表
+     */
+    List<DoctorVo> getFollowedDoctors(Long userId);
 
     /**
      * 获取对象被关注的数量

@@ -52,4 +52,10 @@ public interface HospitalMapper extends BaseMapper<Hospital> {
      * @return 科室ID列表
      */
     List<Long> selectHospitalDepartmentIds(@Param("hospitalId") Long hospitalId);
+
+    /**
+     * 查询有医生的医院列表
+     * @return 医院列表
+     */
+    List<HospitalVo> selectHospitalsWithDoctors();
 }

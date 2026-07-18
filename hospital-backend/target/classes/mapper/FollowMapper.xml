@@ -16,12 +16,26 @@
 
     <!-- 查询用户关注的医院列表 -->
     <select id="selectFollowedHospitals" resultType="com.whlg.hospital.vo.HospitalVo">
-        SELECT h.id, h.name, h.level, h.address, h.phone, h.intro, h.image, 
+        SELECT h.id, h.name, h.level, h.address, h.phone, h.intro, h.image,
                h.province, h.city, h.department_count, h.doctor_count, h.follow_count, h.status
         FROM t_follow f
         INNER JOIN t_hospital h ON f.follow_id = h.id
-        WHERE f.user_id = #{userId} 
+        WHERE f.user_id = #{userId}
           AND f.follow_type = 1
+        ORDER BY f.create_time DESC
+    </select>
+
+    <!-- 查询用户关注的医生列表 -->
+    <select id="selectFollowedDoctors" resultType="com.whlg.hospital.vo.DoctorVo">
+        SELECT d.id, d.name AS doctorName, d.title, d.avatar,
+               h.name AS hospitalName,
+               dept.name AS departmentName
+        FROM t_follow f
+        INNER JOIN t_doctor d ON f.follow_id = d.id
+        LEFT JOIN t_hospital h ON d.hospital_id = h.id
+        LEFT JOIN t_department dept ON d.department_id = dept.id
+        WHERE f.user_id = #{userId}
+          AND f.follow_type = 2
         ORDER BY f.create_time DESC
     </select>
 
