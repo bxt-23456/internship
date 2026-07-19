@@ -29,14 +29,14 @@ public class HospitalServiceImpl extends ServiceImpl<HospitalMapper, Hospital> i
     private DepartmentService departmentService;
 
     @Override
-    public List<HospitalVo> listHospitals(Long departmentId, int page, int pageSize) {
+    public List<HospitalVo> listHospitals(Long departmentId, Long parentDepartmentId, int page, int pageSize) {
         int offset = (page - 1) * pageSize;
-        return hospitalMapper.selectHospitals(departmentId, offset, pageSize);
+        return hospitalMapper.selectHospitals(departmentId, parentDepartmentId, offset, pageSize);
     }
 
     @Override
-    public int countHospitals(Long departmentId) {
-        return hospitalMapper.countHospitals(departmentId);
+    public int countHospitals(Long departmentId, Long parentDepartmentId) {
+        return hospitalMapper.countHospitals(departmentId, parentDepartmentId);
     }
 
     @Override

@@ -15,18 +15,20 @@ public interface HospitalService extends IService<Hospital> {
     /**
      * 获取医院列表（支持分页和科室筛选）
      * @param departmentId 科室ID（可选）
+     * @param parentDepartmentId 父科室ID（可选，按一级科室筛选）
      * @param page 页码
      * @param pageSize 每页数量
      * @return 医院列表
      */
-    List<HospitalVo> listHospitals(Long departmentId, int page, int pageSize);
+    List<HospitalVo> listHospitals(Long departmentId, Long parentDepartmentId, int page, int pageSize);
 
     /**
      * 获取医院总数
      * @param departmentId 科室ID（可选）
+     * @param parentDepartmentId 父科室ID（可选，按一级科室筛选）
      * @return 医院总数
      */
-    int countHospitals(Long departmentId);
+    int countHospitals(Long departmentId, Long parentDepartmentId);
 
     /**
      * 根据ID获取医院详情

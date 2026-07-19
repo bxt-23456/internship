@@ -31,9 +31,10 @@ public class HospitalController {
     @GetMapping("/list")
     public R<List<HospitalVo>> listHospitals(
             @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) Long parentDepartmentId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize) {
-        List<HospitalVo> hospitals = hospitalService.listHospitals(departmentId, page, pageSize);
+        List<HospitalVo> hospitals = hospitalService.listHospitals(departmentId, parentDepartmentId, page, pageSize);
         return R.createSuccess(hospitals);
     }
 
@@ -43,8 +44,10 @@ public class HospitalController {
      * @return 医院总数
      */
     @GetMapping("/count")
-    public R<Integer> countHospitals(@RequestParam(required = false) Long departmentId) {
-        int count = hospitalService.countHospitals(departmentId);
+    public R<Integer> countHospitals(
+            @RequestParam(required = false) Long departmentId,
+            @RequestParam(required = false) Long parentDepartmentId) {
+        int count = hospitalService.countHospitals(departmentId, parentDepartmentId);
         return R.createSuccess(count);
     }
 
