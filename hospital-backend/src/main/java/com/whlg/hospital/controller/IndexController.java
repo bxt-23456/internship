@@ -70,7 +70,7 @@ public class IndexController {
     @GetMapping("/listTopArticle")
     public R<List<Article>> listTopArticle(@RequestParam(defaultValue = "4") int limit) {
         QueryWrapper<Article> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("status", 1).orderByDesc("publish_time").last("LIMIT " + limit);
+        queryWrapper.eq("status", 1).orderByDesc("views").last("LIMIT " + limit);
         List<Article> articles = articleMapper.selectList(queryWrapper);
         return R.createSuccess(articles);
     }

@@ -555,7 +555,7 @@
                     this.doctorId = parseInt(id);
                     this.loading = true;
                     try {
-                        const response = await axios.get('http://localhost:8080/doctor/detail', {
+                        const response = await axios.get('/doctor/detail', {
                             params: { id: this.doctorId }
                         });
                         if (response.data.code === 20000) {

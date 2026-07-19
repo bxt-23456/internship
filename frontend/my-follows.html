@@ -5,6 +5,7 @@
     <title>我的关注 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -243,10 +244,6 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8080';
-        
-        // 配置axios默认允许跨域携带凭证
-        axios.defaults.withCredentials = true;
 
         new Vue({
             el: '#app',
@@ -264,7 +261,7 @@
                 async loadFollowedHospitals() {
                     this.loading = true;
                     try {
-                        const response = await axios.get(`${API_BASE_URL}/follow/hospitals`);
+                        const response = await axios.get('/follow/hospitals');
                         if (response.data.code === 20000) {
                             this.hospitals = response.data.data || [];
                         } else {
@@ -283,7 +280,7 @@
                     }
                     
                     try {
-                        const response = await axios.post(`${API_BASE_URL}/follow/toggle`, null, {
+                        const response = await axios.post('/follow/toggle', null, {
                             params: { 
                                 followType: 1,
                                 followId: hospitalId 

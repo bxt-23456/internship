@@ -5,6 +5,7 @@
     <title>找医生 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -507,27 +508,18 @@
                 async fetchDoctors() {
                     this.loading = true;
                     try {
-                        let url = '';
-                        const params = new URLSearchParams();
-
+                        let response;
                         if (this.selectedSecondary) {
                             // 选择了二级科室，按二级科室查询
-                            url = 'http://localhost:8080/doctor/all';
-                            params.append('departmentId', this.selectedSecondary);
+                            response = await axios.get('/doctor/all', { params: { departmentId: this.selectedSecondary } });
                         } else if (this.selectedPrimary && this.selectedPrimary !== 0) {
                             // 选择了一级科室（非"全部"），按一级科室查询（包括子科室）
-                            url = 'http://localhost:8080/doctor/byParentDepartment';
-                            params.append('parentDepartmentId', this.selectedPrimary);
+                            response = await axios.get('/doctor/byParentDepartment', { params: { parentDepartmentId: this.selectedPrimary } });
                         } else {
                             // 选择了"全部"，查询所有医生
-                            url = 'http://localhost:8080/doctor/all';
+                            response = await axios.get('/doctor/all');
                         }
 
-                        if (params.toString()) {
-                            url += '?' + params.toString();
-                        }
-
-                        const response = await axios.get(url);
                         if (response.data.code === 20000) {
                             this.allDoctors = response.data.data.map(doctor => ({
                                 id: doctor.id,

@@ -1,5 +1,6 @@
 package com.whlg.hospital.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.whlg.hospital.entity.Doctor;
 import com.whlg.hospital.mapper.DoctorMapper;
@@ -40,5 +41,15 @@ public class DoctorServiceImpl extends ServiceImpl<DoctorMapper, Doctor> impleme
     @Override
     public DoctorDetailVo getDoctorDetailById(Long id) {
         return doctorMapper.selectDoctorDetailById(id);
+    }
+
+    @Override
+    public List<Doctor> searchDoctors(String keyword) {
+        LambdaQueryWrapper<Doctor> wrapper = new LambdaQueryWrapper<>();
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            wrapper.like(Doctor::getName, keyword.trim());
+        }
+        wrapper.eq(Doctor::getStatus, 1);
+        return this.list(wrapper);
     }
 }

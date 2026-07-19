@@ -5,6 +5,7 @@
     <title>找医院 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -346,9 +347,6 @@
     </div>
 
     <script>
-        // API基础地址
-        const API_BASE_URL = 'http://localhost:8080';
-
         // Header和Footer组件已经在外部引入
 
         // 主应用
@@ -473,7 +471,7 @@
                 async loadDepartments() {
                     try {
                         // 获取所有一级科室（parentId=0）
-                        const response = await axios.get(`${API_BASE_URL}/department/listByIds`, {
+                        const response = await axios.get('/department/listByIds', {
                             params: { ids: '13,14,15,16,17,18,19,20,21,22,23,24' }
                         });
                         if (response.data.code === 20000) {
@@ -485,7 +483,7 @@
                             
                             // 获取所有二级科室
                             const allChildIds = '25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57';
-                            const childResponse = await axios.get(`${API_BASE_URL}/department/listByIds`, {
+                            const childResponse = await axios.get('/department/listByIds', {
                                 params: { ids: allChildIds }
                             });
                             if (childResponse.data.code === 20000) {
@@ -559,7 +557,7 @@
                         }
 
                         // 调用后端API获取医院列表
-                        const response = await axios.get(`${API_BASE_URL}/hospital/list`, { params });
+                        const response = await axios.get('/hospital/list', { params });
                         if (response.data.code === 20000) {
                             this.hospitals = response.data.data;
                         }
@@ -571,7 +569,7 @@
                         } else if (this.selectedPrimary && this.selectedPrimary !== 0) {
                             countParams.parentDepartmentId = this.selectedPrimary;
                         }
-                        const countResponse = await axios.get(`${API_BASE_URL}/hospital/count`, { params: countParams });
+                        const countResponse = await axios.get('/hospital/count', { params: countParams });
                         if (countResponse.data.code === 20000) {
                             this.totalHospitals = countResponse.data.data;
                         }
