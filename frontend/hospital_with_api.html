@@ -550,9 +550,12 @@
                             pageSize: this.pageSize
                         };
 
-                        // 如果选中了二级科室，添加科室筛选
+                        // 如果选中了二级科室，按具体科室筛选
                         if (this.selectedSecondary) {
                             params.departmentId = this.selectedSecondary;
+                        } else if (this.selectedPrimary && this.selectedPrimary !== 0) {
+                            // 如果只选了一级科室，按父科室筛选
+                            params.parentDepartmentId = this.selectedPrimary;
                         }
 
                         // 调用后端API获取医院列表
@@ -565,6 +568,8 @@
                         const countParams = {};
                         if (this.selectedSecondary) {
                             countParams.departmentId = this.selectedSecondary;
+                        } else if (this.selectedPrimary && this.selectedPrimary !== 0) {
+                            countParams.parentDepartmentId = this.selectedPrimary;
                         }
                         const countResponse = await axios.get(`${API_BASE_URL}/hospital/count`, { params: countParams });
                         if (countResponse.data.code === 20000) {
