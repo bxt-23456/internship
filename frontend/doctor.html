@@ -288,7 +288,11 @@
                     </span>
                 </div>
 
-                <div v-if="filteredDoctors.length > 0" class="doctor-list">
+                <div v-if="loading" class="empty-state">
+                    <p>加载中...</p>
+                </div>
+
+                <div v-else-if="filteredDoctors.length > 0" class="doctor-list">
                     <div v-for="doctor in currentPageDoctors" :key="doctor.id" class="doctor-item" @click="goToDetail(doctor.id)">
                         <img :src="doctor.avatar" :alt="doctor.name" class="avatar">
                         <h3>{{ doctor.name }}</h3>
@@ -333,96 +337,92 @@
         new Vue({
             el: '#app',
             data: {
-                // 一级科室数据
+                // 一级科室数据（使用数据库中的ID）
                 primaryDepartments: [
                     { id: 0, name: '全部' },
-                    { id: 1, name: '内科' },
-                    { id: 2, name: '外科' },
-                    { id: 3, name: '妇产科' },
-                    { id: 4, name: '儿科' },
-                    { id: 5, name: '骨科' },
-                    { id: 6, name: '神经科' },
-                    { id: 7, name: '皮肤科' },
-                    { id: 8, name: '眼科' },
-                    { id: 9, name: '耳鼻喉科' },
-                    { id: 10, name: '口腔科' }
+                    { id: 13, name: '心内科' },
+                    { id: 14, name: '神经内科' },
+                    { id: 15, name: '呼吸内科' },
+                    { id: 16, name: '消化内科' },
+                    { id: 17, name: '内分泌科' },
+                    { id: 18, name: '骨科' },
+                    { id: 19, name: '儿科' },
+                    { id: 20, name: '皮肤科' },
+                    { id: 21, name: '眼科' },
+                    { id: 22, name: '耳鼻喉科' },
+                    { id: 23, name: '妇产科' },
+                    { id: 24, name: '肿瘤科' }
                 ],
-                // 二级科室数据
+                // 二级科室数据（使用数据库中的ID）
                 departments: {
-                    1: [
-                        { id: 11, name: '心内科', parentId: 1 },
-                        { id: 12, name: '呼吸内科', parentId: 1 },
-                        { id: 13, name: '消化内科', parentId: 1 },
-                        { id: 14, name: '肾内科', parentId: 1 },
-                        { id: 15, name: '内分泌科', parentId: 1 },
-                        { id: 16, name: '血液科', parentId: 1 }
+                    13: [
+                        { id: 25, name: '心力衰竭科', parentId: 13 },
+                        { id: 26, name: '冠心病科', parentId: 13 },
+                        { id: 27, name: '高血压科', parentId: 13 },
+                        { id: 28, name: '心律失常科', parentId: 13 }
                     ],
-                    2: [
-                        { id: 21, name: '普外科', parentId: 2 },
-                        { id: 22, name: '骨科', parentId: 2 },
-                        { id: 23, name: '心胸外科', parentId: 2 },
-                        { id: 24, name: '神经外科', parentId: 2 },
-                        { id: 25, name: '泌尿外科', parentId: 2 },
-                        { id: 26, name: '肝胆外科', parentId: 2 }
+                    14: [
+                        { id: 29, name: '脑血管病科', parentId: 14 },
+                        { id: 30, name: '癫痫科', parentId: 14 },
+                        { id: 31, name: '帕金森科', parentId: 14 }
                     ],
-                    3: [
-                        { id: 31, name: '妇科', parentId: 3 },
-                        { id: 32, name: '产科', parentId: 3 },
-                        { id: 33, name: '生殖医学中心', parentId: 3 }
+                    15: [
+                        { id: 32, name: '哮喘科', parentId: 15 },
+                        { id: 33, name: '慢阻肺科', parentId: 15 },
+                        { id: 34, name: '肺部感染科', parentId: 15 }
                     ],
-                    4: [
-                        { id: 41, name: '小儿内科', parentId: 4 },
-                        { id: 42, name: '小儿外科', parentId: 4 },
-                        { id: 43, name: '新生儿科', parentId: 4 }
+                    16: [
+                        { id: 35, name: '胃病科', parentId: 16 },
+                        { id: 36, name: '肝病科', parentId: 16 },
+                        { id: 37, name: '肠病科', parentId: 16 }
                     ],
-                    5: [
-                        { id: 51, name: '创伤骨科', parentId: 5 },
-                        { id: 52, name: '关节外科', parentId: 5 },
-                        { id: 53, name: '脊柱外科', parentId: 5 },
-                        { id: 54, name: '运动医学科', parentId: 5 }
+                    17: [
+                        { id: 38, name: '糖尿病科', parentId: 17 },
+                        { id: 39, name: '甲状腺科', parentId: 17 }
                     ],
-                    6: [
-                        { id: 61, name: '神经内科', parentId: 6 },
-                        { id: 62, name: '神经外科', parentId: 6 }
+                    18: [
+                        { id: 40, name: '脊柱外科', parentId: 18 },
+                        { id: 41, name: '关节外科', parentId: 18 },
+                        { id: 42, name: '运动医学科', parentId: 18 }
                     ],
-                    7: [
-                        { id: 71, name: '皮肤科', parentId: 7 }
+                    19: [
+                        { id: 43, name: '新生儿科', parentId: 19 },
+                        { id: 44, name: '儿童呼吸科', parentId: 19 },
+                        { id: 45, name: '儿童消化科', parentId: 19 }
                     ],
-                    8: [
-                        { id: 81, name: '眼科', parentId: 8 }
+                    20: [
+                        { id: 46, name: '皮肤美容科', parentId: 20 },
+                        { id: 47, name: '性病科', parentId: 20 }
                     ],
-                    9: [
-                        { id: 91, name: '耳鼻喉科', parentId: 9 }
+                    21: [
+                        { id: 48, name: '眼底病科', parentId: 21 },
+                        { id: 49, name: '白内障科', parentId: 21 }
                     ],
-                    10: [
-                        { id: 101, name: '口腔科', parentId: 10 }
+                    22: [
+                        { id: 50, name: '耳科', parentId: 22 },
+                        { id: 51, name: '鼻科', parentId: 22 },
+                        { id: 52, name: '咽喉科', parentId: 22 }
+                    ],
+                    23: [
+                        { id: 53, name: '妇科', parentId: 23 },
+                        { id: 54, name: '产科', parentId: 23 }
+                    ],
+                    24: [
+                        { id: 55, name: '肿瘤内科', parentId: 24 },
+                        { id: 56, name: '肿瘤外科', parentId: 24 },
+                        { id: 57, name: '放疗科', parentId: 24 }
                     ]
                 },
-                // 医生数据（关联二级科室）
-                allDoctors: [
-                    { id: 1, name: '张明远', department: '心内科', hospital: '北京协和医院', hospitalLevel: '三甲', experience: '30年', goodAt: '冠心病、高血压、心律失常等心血管疾病的诊治', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 11 },
-                    { id: 2, name: '李晓华', department: '妇科', hospital: '上海瑞金医院', hospitalLevel: '三甲', experience: '20年', goodAt: '高危妊娠、妇科肿瘤、微创手术', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 31 },
-                    { id: 3, name: '王建国', department: '骨科', hospital: '广州中山医院', hospitalLevel: '三甲', experience: '25年', goodAt: '脊柱侧弯、椎间盘突出、关节置换', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 52 },
-                    { id: 4, name: '陈美玲', department: '儿科', hospital: '杭州浙一医院', hospitalLevel: '三甲', experience: '15年', goodAt: '小儿呼吸、哮喘、过敏性疾病', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['医保定点', '三甲医院'], departmentId: 41 },
-                    { id: 5, name: '刘志强', department: '神经内科', hospital: '北京协和医院', hospitalLevel: '三甲', experience: '28年', goodAt: '脑血管病、帕金森、癫痫、头痛', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 61 },
-                    { id: 6, name: '赵雅琴', department: '呼吸内科', hospital: '上海瑞金医院', hospitalLevel: '三甲', experience: '22年', goodAt: '哮喘、慢阻肺、肺部感染', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 12 },
-                    { id: 7, name: '孙伟东', department: '消化内科', hospital: '广州中山医院', hospitalLevel: '三甲', experience: '26年', goodAt: '胃肠疾病、肝胆疾病、内镜诊疗', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 13 },
-                    { id: 8, name: '周丽华', department: '产科', hospital: '杭州浙一医院', hospitalLevel: '三甲', experience: '18年', goodAt: '高危妊娠、产前诊断、产科手术', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 32 },
-                    { id: 9, name: '吴明德', department: '骨科', hospital: '北京天坛医院', hospitalLevel: '三甲', experience: '24年', goodAt: '脊柱外科、脊柱微创手术', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 53 },
-                    { id: 10, name: '郑雪梅', department: '皮肤科', hospital: '上海华山医院', hospitalLevel: '三甲', experience: '16年', goodAt: '皮肤病、过敏性疾病、医学美容', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['医保定点', '三甲医院'], departmentId: 71 },
-                    { id: 11, name: '黄磊', department: '眼科', hospital: '广东省人民医院', hospitalLevel: '三甲', experience: '27年', goodAt: '白内障、青光眼、眼底病变', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 81 },
-                    { id: 12, name: '林静', department: '耳鼻喉科', hospital: '南京鼓楼医院', hospitalLevel: '三甲', experience: '19年', goodAt: '耳鼻喉疾病、头颈肿瘤', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 91 },
-                    { id: 13, name: '许文涛', department: '口腔科', hospital: '武汉同济医院', hospitalLevel: '三甲', experience: '23年', goodAt: '口腔修复、种植牙、正畸', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 101 },
-                    { id: 14, name: '马晓燕', department: '内分泌科', hospital: '成都华西医院', hospitalLevel: '三甲', experience: '17年', goodAt: '糖尿病、甲状腺疾病、代谢综合征', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['医保定点', '三甲医院'], departmentId: 15 },
-                    { id: 15, name: '何建军', department: '神经外科', hospital: '西安西京医院', hospitalLevel: '三甲', experience: '29年', goodAt: '脑肿瘤、脑血管病、脊髓疾病', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['医保定点', '三甲医院'], departmentId: 62 },
-                    { id: 16, name: '徐芳', department: '肾内科', hospital: '天津总医院', hospitalLevel: '三甲', experience: '14年', goodAt: '肾病、血液透析、腹膜透析', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['医保定点', '三甲医院'], departmentId: 14 }
-                ],
+                // 医生数据（从后端API获取）
+                allDoctors: [],
                 // 选中状态
                 selectedPrimary: null,
                 selectedSecondary: null,
                 // 分页
                 currentPage: 1,
-                pageSize: 5
+                pageSize: 5,
+                // 加载状态
+                loading: false
             },
             computed: {
                 // 获取二级科室列表
@@ -480,10 +480,12 @@
                     this.selectedPrimary = id;
                     this.selectedSecondary = null;
                     this.currentPage = 1;
+                    this.fetchDoctors();
                 },
                 selectSecondary(id) {
                     this.selectedSecondary = id;
                     this.currentPage = 1;
+                    this.fetchDoctors();
                 },
                 prevPage() {
                     if (this.currentPage > 1) {
@@ -500,10 +502,56 @@
                 },
                 goToDetail(id) {
                     window.location.href = 'doctor-detail.html?id=' + id;
+                },
+                // 从后端获取医生数据
+                async fetchDoctors() {
+                    this.loading = true;
+                    try {
+                        let url = '';
+                        const params = new URLSearchParams();
+
+                        if (this.selectedSecondary) {
+                            // 选择了二级科室，按二级科室查询
+                            url = 'http://localhost:8080/doctor/all';
+                            params.append('departmentId', this.selectedSecondary);
+                        } else if (this.selectedPrimary && this.selectedPrimary !== 0) {
+                            // 选择了一级科室（非"全部"），按一级科室查询（包括子科室）
+                            url = 'http://localhost:8080/doctor/byParentDepartment';
+                            params.append('parentDepartmentId', this.selectedPrimary);
+                        } else {
+                            // 选择了"全部"，查询所有医生
+                            url = 'http://localhost:8080/doctor/all';
+                        }
+
+                        if (params.toString()) {
+                            url += '?' + params.toString();
+                        }
+
+                        const response = await axios.get(url);
+                        if (response.data.code === 20000) {
+                            this.allDoctors = response.data.data.map(doctor => ({
+                                id: doctor.id,
+                                name: doctor.doctorName,
+                                title: doctor.title,
+                                avatar: doctor.avatar || 'img/doctor-male-doc.jpg',
+                                hospital: doctor.hospitalName,
+                                department: doctor.departmentName,
+                                departmentId: doctor.departmentId
+                            }));
+                        } else {
+                            console.error('获取医生列表失败:', response.data.message);
+                            this.allDoctors = [];
+                        }
+                    } catch (error) {
+                        console.error('请求医生列表失败:', error);
+                        this.allDoctors = [];
+                    } finally {
+                        this.loading = false;
+                    }
                 }
             },
             mounted() {
-                // 默认选中第一个一级科室
+                // 默认选中第一个一级科室（会自动调用 fetchDoctors）
                 if (this.primaryDepartments.length > 0) {
                     this.selectPrimary(this.primaryDepartments[0].id);
                 }

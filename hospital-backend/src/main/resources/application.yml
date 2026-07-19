@@ -21,6 +21,11 @@ jwt:
 
 # 阿里云短信配置
 
+aliyun:
+  sms:
+    access-key-id: 填写你的id
+    access-key-secret: 填写你的密码
+    endpoint: dypnsapi.aliyuncs.com
 
 mybatis-plus:
   type-aliases-package: com.whlg.hospital.entity,com.whlg.hospital.dto,com.whlg.hospital.vo	#指定别名实体类的包

@@ -18,9 +18,9 @@
 
     <!-- 根据医院ID查询医生列表（可选按科室筛选） -->
     <select id="selectDoctorsByHospital" resultType="DoctorVo">
-        SELECT d.id, d.name doctorName, d.title, d.avatar, 
+        SELECT d.id, d.name doctorName, d.title, d.avatar,
                h.name hospitalName, dt.name departmentName, dt.id departmentId
-        FROM t_doctor d 
+        FROM t_doctor d
         INNER JOIN t_hospital h ON d.hospital_id = h.id
         INNER JOIN t_department dt ON d.department_id = dt.id
         WHERE d.hospital_id = #{hospitalId}
@@ -28,6 +28,47 @@
             AND d.department_id = #{departmentId}
         </if>
         ORDER BY d.follow_count DESC
+    </select>
+
+    <!-- 查询所有医生（可选按科室筛选） -->
+    <select id="selectAllDoctors" resultType="DoctorVo">
+        SELECT d.id, d.name doctorName, d.title, d.avatar,
+               h.name hospitalName, dt.name departmentName, dt.id departmentId
+        FROM t_doctor d
+        INNER JOIN t_hospital h ON d.hospital_id = h.id
+        INNER JOIN t_department dt ON d.department_id = dt.id
+        <where>
+            <if test="departmentId != null">
+                d.department_id = #{departmentId}
+            </if>
+        </where>
+        ORDER BY d.follow_count DESC
+    </select>
+
+    <!-- 根据一级科室ID查询医生（包括子科室的医生和直接属于该一级科室的医生） -->
+    <select id="selectDoctorsByParentDepartment" resultType="DoctorVo">
+        SELECT d.id, d.name doctorName, d.title, d.avatar,
+               h.name hospitalName, dt.name departmentName, dt.id departmentId
+        FROM t_doctor d
+        INNER JOIN t_hospital h ON d.hospital_id = h.id
+        INNER JOIN t_department dt ON d.department_id = dt.id
+        WHERE dt.id = #{parentDepartmentId}
+           OR dt.parent_id = #{parentDepartmentId}
+        ORDER BY d.follow_count DESC
+    </select>
+
+    <!-- 根据ID查询医生详情 -->
+    <select id="selectDoctorDetailById" resultType="DoctorDetailVo">
+        SELECT d.id, d.name doctorName, d.gender, d.title, d.avatar,
+               h.name hospitalName, h.id hospitalId,
+               dt.name departmentName, dt.id departmentId,
+               d.phone, d.intro, d.expertise, d.consult_count consultCount,
+               d.rating, d.follow_count followCount, d.online_status onlineStatus,
+               d.price, d.registration_price registrationPrice
+        FROM t_doctor d
+        INNER JOIN t_hospital h ON d.hospital_id = h.id
+        INNER JOIN t_department dt ON d.department_id = dt.id
+        WHERE d.id = #{id}
     </select>
 
 </mapper>
