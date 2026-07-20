@@ -603,7 +603,8 @@
                 async loadFollowCount() {
                     try {
                         const response = await axios.get('/follow/count', {
-                            params: { followType: 2, followId: this.doctorId }
+                            params: { followType: 2, followId: this.doctorId },
+                            _skipAuthRedirect: true
                         });
                         if (response.data.code === 20000) {
                             this.doctorFollowCount = response.data.data;

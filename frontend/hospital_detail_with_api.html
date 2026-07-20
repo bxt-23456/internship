@@ -682,7 +682,8 @@
                             params: {
                                 followType: 1,
                                 followId: this.hospitalId
-                            }
+                            },
+                            _skipAuthRedirect: true
                         });
                         if (response.data.code === 20000) {
                             this.hospitalFollowCount = response.data.data || 0;
