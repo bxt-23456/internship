@@ -21,6 +21,9 @@ public class ConsultVo {
     private Long doctorId;
     private String doctorName;
     private String doctorAvatar;
+    private String doctorTitle;
+    private String departmentName;
+    private String hospitalName;
     private String patientName;
     private String patientPhone;
     private String diseaseDesc;
@@ -28,6 +31,7 @@ public class ConsultVo {
     private Integer duration;
     private BigDecimal amount;
     private Integer status;
+    private Integer hasReviewed;
     private LocalDateTime payTime;
     private LocalDateTime createTime;
 }

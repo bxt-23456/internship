@@ -22,8 +22,10 @@ public class AppointmentVo {
     private Long doctorId;
     private String doctorName;
     private String doctorAvatar;
+    private String doctorTitle;
     private Long hospitalId;
     private String hospitalName;
+    private String hospitalImage;
     private String departmentName;
     private String patientName;
     private String patientPhone;
@@ -35,6 +37,7 @@ public class AppointmentVo {
     private String diseaseDesc;
     private BigDecimal amount;
     private Integer status;
+    private Integer hasReviewed;
     private LocalDateTime payTime;
     private LocalDateTime createTime;
 }

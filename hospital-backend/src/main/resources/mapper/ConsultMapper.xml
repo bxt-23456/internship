@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.whlg.hospital.mapper.ConsultMapper">
+
+    <select id="selectConsultList" resultType="com.whlg.hospital.vo.ConsultVo">
+        SELECT
+            c.id,
+            c.order_no AS orderNo,
+            c.user_id AS userId,
+            c.doctor_id AS doctorId,
+            d.name AS doctorName,
+            d.avatar AS doctorAvatar,
+            d.title AS doctorTitle,
+            dt.name AS departmentName,
+            h.name AS hospitalName,
+            c.patient_name AS patientName,
+            c.patient_phone AS patientPhone,
+            c.disease_desc AS diseaseDesc,
+            c.appointment_time AS appointmentTime,
+            c.duration,
+            c.amount,
+            c.status,
+            c.pay_time AS payTime,
+            c.create_time AS createTime,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM t_review r
+                    WHERE r.order_type = 2
+                      AND r.order_id = c.id
+                      AND r.user_id = c.user_id
+                ) THEN 1 ELSE 0
+            END AS hasReviewed
+        FROM t_consult c
+                 LEFT JOIN t_doctor d ON c.doctor_id = d.id
+                 LEFT JOIN t_department dt ON d.department_id = dt.id
+                 LEFT JOIN t_hospital h ON d.hospital_id = h.id
+        WHERE c.user_id = #{userId}
+        <if test="status != null">
+            AND c.status = #{status}
+        </if>
+        ORDER BY c.create_time DESC
+    </select>
+
+    <select id="selectConsultDetailByOrderNo" resultType="com.whlg.hospital.vo.ConsultVo">
+        SELECT
+            c.id,
+            c.order_no AS orderNo,
+            c.user_id AS userId,
+            c.doctor_id AS doctorId,
+            d.name AS doctorName,
+            d.avatar AS doctorAvatar,
+            d.title AS doctorTitle,
+            dt.name AS departmentName,
+            h.name AS hospitalName,
+            c.patient_name AS patientName,
+            c.patient_phone AS patientPhone,
+            c.disease_desc AS diseaseDesc,
+            c.appointment_time AS appointmentTime,
+            c.duration,
+            c.amount,
+            c.status,
+            c.pay_time AS payTime,
+            c.create_time AS createTime,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM t_review r
+                    WHERE r.order_type = 2
+                      AND r.order_id = c.id
+                      AND r.user_id = c.user_id
+                ) THEN 1 ELSE 0
+            END AS hasReviewed
+        FROM t_consult c
+                 LEFT JOIN t_doctor d ON c.doctor_id = d.id
+                 LEFT JOIN t_department dt ON d.department_id = dt.id
+                 LEFT JOIN t_hospital h ON d.hospital_id = h.id
+        WHERE c.order_no = #{orderNo}
+        LIMIT 1
+    </select>
+
+</mapper>

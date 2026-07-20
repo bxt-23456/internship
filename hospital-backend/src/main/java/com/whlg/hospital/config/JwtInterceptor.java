@@ -1,6 +1,7 @@
 package com.whlg.hospital.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.whlg.hospital.entity.User;
 import com.whlg.hospital.util.JwtUtil;
 import com.whlg.hospital.util.R;
 import com.whlg.hospital.util.StatusCode;
@@ -77,6 +78,14 @@ public class JwtInterceptor implements HandlerInterceptor {
 
         // 将用户ID存入request attribute，方便后续Controller使用
         request.setAttribute("userId", userId);
+
+        // 兼容仍然依赖 Session 取登录用户的旧接口。
+        // 前端现在主要通过 localStorage 携带 token，请求可能拿不到历史 JSESSIONID，
+        // 因此这里在 token 验证通过后重建当前请求所需的用户会话信息。
+        User currentUser = new User();
+        currentUser.setId(userId);
+        currentUser.setUsername(jwtUtil.getUsernameFromToken(token));
+        request.getSession().setAttribute("user", currentUser);
 
         return true;
     }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.whlg.hospital.mapper.FamilyMemberMapper">
+
+    <select id="selectListByUserId" resultType="com.whlg.hospital.entity.FamilyMember">
+        SELECT
+            id,
+            user_id AS userId,
+            name,
+            gender,
+            birthday,
+            phone,
+            id_card AS idCard,
+            relation,
+            is_default AS isDefault,
+            create_time AS createTime,
+            update_time AS updateTime
+        FROM t_family_member
+        WHERE user_id = #{userId}
+        ORDER BY is_default DESC, id ASC
+    </select>
+
+</mapper>

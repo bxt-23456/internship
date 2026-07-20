@@ -27,8 +27,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
-    private AliyunSmsUtil aliyunSmsUtil;
+    //@Autowired
+    //private AliyunSmsUtil aliyunSmsUtil;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -72,7 +72,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 发送短信
             try {
                 String templateParam = "{\"code\":\"" + code + "\",\"min\":\"5\"}";
-                aliyunSmsUtil.sendSmsVerifyCode(phone, SMS_SIGN_NAME, SMS_TEMPLATE_CODE, templateParam);
+                //aliyunSmsUtil.sendSmsVerifyCode(phone, SMS_SIGN_NAME, SMS_TEMPLATE_CODE, templateParam);
             } catch (Exception smsException) {
                 // 短信发送失败不影响验证码存储，打印日志继续
                 System.err.println("短信发送异常（验证码已存入Redis）: " + smsException.getMessage());

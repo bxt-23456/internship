@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.whlg.hospital.mapper.ScheduleMapper">
+
+    <update id="deductRemainCount">
+        UPDATE t_schedule
+        SET remain_count = remain_count - 1,
+            status = CASE WHEN remain_count - 1 &lt;= 0 THEN 0 ELSE 1 END
+        WHERE id = #{id}
+          AND remain_count = #{remainCount}
+          AND remain_count &gt; 0
+    </update>
+
+    <update id="restoreRemainCount">
+        UPDATE t_schedule
+        SET remain_count = remain_count + 1,
+            status = 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>
