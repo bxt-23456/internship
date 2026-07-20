@@ -543,11 +543,12 @@
                         const response = await axios.get('/hospital/detail/' + this.hospitalId);
                         if (response.data.code === 20000) {
                             this.hospital = response.data.data;
+                            // 从医院详情数据中获取关注数（数据库中的值）
+                            this.hospitalFollowCount = this.hospital.followCount || 0;
                             await Promise.all([
                                 this.loadDepartments(),
                                 this.loadDoctors(),
-                                this.checkFollowStatus(),
-                                this.loadFollowCount()
+                                this.checkFollowStatus()
                             ]);
                         }
                     } catch (error) {
@@ -659,11 +660,12 @@
                         });
                         if (response.data.code === 20000) {
                             this.hospitalFollowed = response.data.data;
-                            // 从后端获取真实关注数量
-                            await this.loadFollowCount();
+                            // 直接更新本地关注数，而不是通过接口获取
                             if (this.hospitalFollowed) {
+                                this.hospitalFollowCount++;
                                 alert('关注成功');
                             } else {
+                                this.hospitalFollowCount--;
                                 alert('已取消关注');
                             }
                         } else if (response.data.code === 30001) {

@@ -37,7 +37,8 @@ import java.util.*;
 public class AlipayController {
 
     // Live Server 当前是以项目根目录作为站点根目录，前端页面实际位于 /frontend 下。
-    private static final String FRONTEND_BASE_URL = "http://127.0.0.1:5500/frontend/";
+    // 注意：这里需要使用 cpolar 的前端地址，而不是本地地址
+    private static final String FRONTEND_BASE_URL = "http://1120ee0d.r2.cpolar.top/";
     private static final String DEBUG_SERVER_URL = "http://127.0.0.1:7777/event";
     private static final String DEBUG_SESSION_ID = "alipay-504-timeout";
 
