@@ -27,10 +27,10 @@ public class AlipayConfig {
     // 支付宝公钥,查看地址：https://openhome.alipay.com/platform/keyManage.htm 对应APPID下的支付宝公钥。
     public static String alipay_public_key = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAg0BW0sElspkMPrrVxZUyJiYr3HvLGt/89aenvs7NlbN5x3i+XE6OtfbtmSqF4KYa77T3Qhg1lZU0z9UBWF85nPHyJ/PUA8tngFCyV5DX6u6/3UePvYAwnaHEY+d1JuFd7n8fw/YjHONMiyVidn9LKIIbc6baQJFjX9eHiTM5OluRkotzA+dYzlEkKSXPA0QCd0ZO3BlGpHPj/YOlPwi0J+ffisE1miDoT1HGbepe1Q8bdoUVXSlksbzGE4U+jkhI8yMzm85tfLcJ6l75G1x/9yedEOY6orLeRVYpt6YR0z4g3wP8GYsTYUWL9gEleUb2+C6ZYwlO0HIRjSBniEH0qwIDAQAB";
     // 服务器异步通知页面路径  需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
-    public static String notify_url = "http://6517c4e8.r6.cpolar.cn/alipay/notifyUrl";
+    public static String notify_url = "https://629809a8.r18.cpolar.top/alipay/notifyUrl";
 
     // 页面跳转同步通知页面路径 需http://格式的完整路径，不能加?id=123这类自定义参数，必须外网可以正常访问
-    public static String return_url = "http://6517c4e8.r6.cpolar.cn/alipay/returnUrl";
+    public static String return_url = "https://629809a8.r18.cpolar.top/alipay/returnUrl";
 
     // 签名方式
     public static String sign_type = "RSA2";

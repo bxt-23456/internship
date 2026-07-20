@@ -769,6 +769,7 @@
                     axios.post('/review/submit', {
                         orderType: 1,
                         orderId: this.currentReviewOrder.id,
+                        orderNo: this.currentReviewOrder.orderNo,
                         userId: userId,
                         doctorId: this.currentReviewOrder.doctorId,
                         rating: this.reviewRating,

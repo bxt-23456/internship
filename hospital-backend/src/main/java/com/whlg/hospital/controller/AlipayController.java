@@ -5,6 +5,7 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.whlg.hospital.config.AlipayConfig;
 import com.whlg.hospital.dto.AlipayDto;
 import com.whlg.hospital.service.AppointmentService;
@@ -17,9 +18,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -31,7 +36,10 @@ import java.util.*;
 @RequestMapping("/alipay")
 public class AlipayController {
 
-    private static final String FRONTEND_BASE_URL = "http://127.0.0.1:5500/";
+    // Live Server 当前是以项目根目录作为站点根目录，前端页面实际位于 /frontend 下。
+    private static final String FRONTEND_BASE_URL = "http://127.0.0.1:5500/frontend/";
+    private static final String DEBUG_SERVER_URL = "http://127.0.0.1:7777/event";
+    private static final String DEBUG_SESSION_ID = "alipay-504-timeout";
 
     @Autowired
     private AppointmentService appointmentService;
@@ -77,6 +85,26 @@ public class AlipayController {
                     + "\"product_code\":\"FAST_INSTANT_TRADE_PAY\"}");
             //请求
             String result = alipayClient.pageExecute(alipayRequest).getBody();
+            // #region debug-point A:pay-response-raw
+            Map<String, Object> rawDebugData = new LinkedHashMap<>();
+            rawDebugData.put("orderNo", out_trade_no);
+            rawDebugData.put("containsHttpGateway", result.contains("http://openapi-sandbox.dl.alipaydev.com/gateway.do"));
+            rawDebugData.put("containsHttpsGateway", result.contains("https://openapi-sandbox.dl.alipaydev.com/gateway.do"));
+            rawDebugData.put("snippet", result.substring(0, Math.min(result.length(), 220)));
+            reportDebug("A", "AlipayController:/pay:raw", "[DEBUG] pageExecute raw html snapshot", rawDebugData);
+            // #endregion
+            // 部分沙箱环境/SDK 返回的表单 action 仍可能是 http，浏览器访问后容易出现 504。
+            // 这里统一强制替换为 https 网关，减少沙箱收银台跳转异常。
+            result = result.replace("http://openapi-sandbox.dl.alipaydev.com/gateway.do",
+                    "https://openapi-sandbox.dl.alipaydev.com/gateway.do");
+            // #region debug-point B:pay-response-replaced
+            Map<String, Object> replacedDebugData = new LinkedHashMap<>();
+            replacedDebugData.put("orderNo", out_trade_no);
+            replacedDebugData.put("containsHttpGateway", result.contains("http://openapi-sandbox.dl.alipaydev.com/gateway.do"));
+            replacedDebugData.put("containsHttpsGateway", result.contains("https://openapi-sandbox.dl.alipaydev.com/gateway.do"));
+            replacedDebugData.put("snippet", result.substring(0, Math.min(result.length(), 220)));
+            reportDebug("B", "AlipayController:/pay:replaced", "[DEBUG] pageExecute replaced html snapshot", replacedDebugData);
+            // #endregion
             System.out.println(result);//响应的JS脚本,用于跳转到支付宝收银台界面
             //输出
             return R.createSuccess(result);
@@ -96,7 +124,7 @@ public class AlipayController {
      * 如果没有收到该页面返回的 success
      * 建议该页面只做支付成功的业务逻辑处理，退款的处理请以调用退款查询接口的结果为准。
      */
-    @GetMapping("/notifyUrl") //设置请求白名单
+    @RequestMapping(value = "/notifyUrl", method = {RequestMethod.GET, RequestMethod.POST}) // 设置请求白名单，兼容支付宝异步POST回调
     public void notifyUrl(HttpServletRequest request,HttpServletResponse response) throws IOException, AlipayApiException {
         //获取支付宝POST过来反馈信息
         Map<String,String> params = new HashMap<String,String>();
@@ -114,7 +142,24 @@ public class AlipayController {
             params.put(name, valueStr);
         }
 
+        // #region debug-point E:notify-entry
+        Map<String, Object> notifyEntryData = new LinkedHashMap<>();
+        notifyEntryData.put("method", request.getMethod());
+        notifyEntryData.put("paramKeys", new ArrayList<>(params.keySet()));
+        notifyEntryData.put("outTradeNo", params.get("out_trade_no"));
+        notifyEntryData.put("tradeStatus", params.get("trade_status"));
+        notifyEntryData.put("tradeNo", params.get("trade_no"));
+        reportDebug("E", "AlipayController:/notifyUrl", "[DEBUG] notifyUrl reached", notifyEntryData);
+        // #endregion
+
         boolean signVerified = AlipaySignature.rsaCheckV1(params, AlipayConfig.alipay_public_key, AlipayConfig.charset, AlipayConfig.sign_type); //调用SDK验证签名
+        // #region debug-point F:notify-sign
+        Map<String, Object> notifySignData = new LinkedHashMap<>();
+        notifySignData.put("outTradeNo", params.get("out_trade_no"));
+        notifySignData.put("tradeStatus", params.get("trade_status"));
+        notifySignData.put("signVerified", signVerified);
+        reportDebug("F", "AlipayController:/notifyUrl", "[DEBUG] notifyUrl sign verify result", notifySignData);
+        // #endregion
 
         //——请在这里编写您的程序（以下代码仅作参考）——
 
@@ -179,8 +224,23 @@ public class AlipayController {
             valueStr = new String(valueStr.getBytes("ISO-8859-1"), "utf-8");
             params.put(name, valueStr);
         }
+        // #region debug-point G:return-entry
+        Map<String, Object> returnEntryData = new LinkedHashMap<>();
+        returnEntryData.put("paramKeys", new ArrayList<>(params.keySet()));
+        returnEntryData.put("outTradeNo", params.get("out_trade_no"));
+        returnEntryData.put("tradeNo", params.get("trade_no"));
+        returnEntryData.put("totalAmount", params.get("total_amount"));
+        reportDebug("G", "AlipayController:/returnUrl", "[DEBUG] returnUrl reached", returnEntryData);
+        // #endregion
         System.out.println("params = " + params);
         boolean signVerified = AlipaySignature.rsaCheckV1(params, AlipayConfig.alipay_public_key, AlipayConfig.charset, AlipayConfig.sign_type); //调用SDK验证签名
+        // #region debug-point H:return-sign
+        Map<String, Object> returnSignData = new LinkedHashMap<>();
+        returnSignData.put("outTradeNo", params.get("out_trade_no"));
+        returnSignData.put("tradeNo", params.get("trade_no"));
+        returnSignData.put("signVerified", signVerified);
+        reportDebug("H", "AlipayController:/returnUrl", "[DEBUG] returnUrl sign verify result", returnSignData);
+        // #endregion
 
         //——请在这里编写您的程序（以下代码仅作参考）——
         if(signVerified) {
@@ -241,4 +301,32 @@ public class AlipayController {
         ConsultVo consult = consultService.getDetail(orderNo);
         return consult != null;
     }
+
+    // #region debug-point Z:report-helper
+    private void reportDebug(String hypothesisId, String location, String msg, Map<String, Object> data) {
+        try {
+            Map<String, Object> event = new LinkedHashMap<>();
+            event.put("sessionId", DEBUG_SESSION_ID);
+            event.put("runId", "pre-fix");
+            event.put("hypothesisId", hypothesisId);
+            event.put("location", location);
+            event.put("msg", msg);
+            event.put("data", data);
+            event.put("ts", System.currentTimeMillis());
+
+            HttpURLConnection connection = (HttpURLConnection) new URL(DEBUG_SERVER_URL).openConnection();
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+            byte[] body = new ObjectMapper().writeValueAsBytes(event);
+            connection.setFixedLengthStreamingMode(body.length);
+            try (OutputStream os = connection.getOutputStream()) {
+                os.write(body);
+            }
+            connection.getResponseCode();
+            connection.disconnect();
+        } catch (Exception ignored) {
+        }
+    }
+    // #endregion
 }

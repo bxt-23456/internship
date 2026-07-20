@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.whlg.hospital.mapper.AppointmentMapper">
+
+    <select id="selectAppointmentList" resultType="com.whlg.hospital.vo.AppointmentVo">
+        SELECT
+            a.id,
+            a.order_no AS orderNo,
+            a.user_id AS userId,
+            a.doctor_id AS doctorId,
+            d.name AS doctorName,
+            d.avatar AS doctorAvatar,
+            d.title AS doctorTitle,
+            a.hospital_id AS hospitalId,
+            h.name AS hospitalName,
+            h.image AS hospitalImage,
+            dt.name AS departmentName,
+            a.patient_name AS patientName,
+            a.patient_phone AS patientPhone,
+            a.patient_id_card AS patientIdCard,
+            a.patient_gender AS patientGender,
+            a.patient_age AS patientAge,
+            a.appointment_date AS appointmentDate,
+            a.appointment_time AS appointmentTime,
+            a.disease_desc AS diseaseDesc,
+            a.amount,
+            a.status,
+            a.pay_time AS payTime,
+            a.create_time AS createTime,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM t_review r
+                    WHERE r.order_type = 1
+                      AND r.order_id = a.id
+                      AND r.user_id = a.user_id
+                ) THEN 1 ELSE 0
+            END AS hasReviewed
+        FROM t_appointment a
+                 LEFT JOIN t_doctor d ON a.doctor_id = d.id
+                 LEFT JOIN t_hospital h ON a.hospital_id = h.id
+                 LEFT JOIN t_department dt ON d.department_id = dt.id
+        WHERE a.user_id = #{userId}
+        <if test="status != null">
+            AND a.status = #{status}
+        </if>
+        ORDER BY a.create_time DESC
+    </select>
+
+    <select id="selectAppointmentDetailByOrderNo" resultType="com.whlg.hospital.vo.AppointmentVo">
+        SELECT
+            a.id,
+            a.order_no AS orderNo,
+            a.user_id AS userId,
+            a.doctor_id AS doctorId,
+            d.name AS doctorName,
+            d.avatar AS doctorAvatar,
+            d.title AS doctorTitle,
+            a.hospital_id AS hospitalId,
+            h.name AS hospitalName,
+            h.image AS hospitalImage,
+            dt.name AS departmentName,
+            a.patient_name AS patientName,
+            a.patient_phone AS patientPhone,
+            a.patient_id_card AS patientIdCard,
+            a.patient_gender AS patientGender,
+            a.patient_age AS patientAge,
+            a.appointment_date AS appointmentDate,
+            a.appointment_time AS appointmentTime,
+            a.disease_desc AS diseaseDesc,
+            a.amount,
+            a.status,
+            a.pay_time AS payTime,
+            a.create_time AS createTime,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM t_review r
+                    WHERE r.order_type = 1
+                      AND r.order_id = a.id
+                      AND r.user_id = a.user_id
+                ) THEN 1 ELSE 0
+            END AS hasReviewed
+        FROM t_appointment a
+                 LEFT JOIN t_doctor d ON a.doctor_id = d.id
+                 LEFT JOIN t_hospital h ON a.hospital_id = h.id
+                 LEFT JOIN t_department dt ON d.department_id = dt.id
+        WHERE a.order_no = #{orderNo}
+        LIMIT 1
+    </select>
+
+</mapper>

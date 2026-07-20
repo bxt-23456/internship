@@ -1,6 +1,7 @@
 package com.whlg.hospital.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.whlg.hospital.dto.CreateReviewDto;
 import com.whlg.hospital.entity.Review;
 import com.whlg.hospital.vo.ReviewVo;
 
@@ -14,4 +15,8 @@ public interface ReviewService extends IService<Review> {
      * @return 评价列表（含用户信息）
      */
     List<ReviewVo> listByDoctorId(Long doctorId);
+
+    boolean submitReview(CreateReviewDto dto);
+
+    List<ReviewVo> listByUserId(Long userId);
 }

@@ -489,8 +489,50 @@
                         if (!res.data.flag) {
                             throw new Error(res.data.message || '发起支付失败');
                         }
+                        // #region debug-point C:frontend-raw-html
+                        fetch('http://127.0.0.1:7777/event', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                sessionId: 'alipay-504-timeout',
+                                runId: 'pre-fix',
+                                hypothesisId: 'C',
+                                location: 'reservation-pay.html:488',
+                                msg: '[DEBUG] frontend raw pay html snapshot',
+                                data: {
+                                    orderNo: this.orderNo,
+                                    containsHttpGateway: (res.data.data || '').indexOf('http://openapi-sandbox.dl.alipaydev.com/gateway.do') > -1,
+                                    containsHttpsGateway: (res.data.data || '').indexOf('https://openapi-sandbox.dl.alipaydev.com/gateway.do') > -1,
+                                    snippet: (res.data.data || '').slice(0, 220)
+                                },
+                                ts: Date.now()
+                            })
+                        }).catch(() => {});
+                        // #endregion
+                        const payHtml = (res.data.data || '').replace(
+                            /http:\/\/openapi-sandbox\.dl\.alipaydev\.com\/gateway\.do/g,
+                            'https://openapi-sandbox.dl.alipaydev.com/gateway.do'
+                        );
+                        // #region debug-point D:frontend-replaced-html
+                        fetch('http://127.0.0.1:7777/event', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                sessionId: 'alipay-504-timeout',
+                                runId: 'pre-fix',
+                                hypothesisId: 'D',
+                                location: 'reservation-pay.html:496',
+                                msg: '[DEBUG] frontend replaced pay html snapshot',
+                                data: {
+                                    orderNo: this.orderNo,
+                                    containsHttpGateway: payHtml.indexOf('http://openapi-sandbox.dl.alipaydev.com/gateway.do') > -1,
+                                    containsHttpsGateway: payHtml.indexOf('https://openapi-sandbox.dl.alipaydev.com/gateway.do') > -1,
+                                    snippet: payHtml.slice(0, 220)
+                                },
+                                ts: Date.now()
+                            })
+                        }).catch(() => {});
+                        // #endregion
                         document.open();
-                        document.write(res.data.data);
+                        document.write(payHtml);
                         document.close();
                     }).catch(err => {
                         this.payButtonDisabled = false;
