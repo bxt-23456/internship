@@ -168,4 +168,52 @@ public class UserController {
             return R.createError(result);
         }
     }
+
+    /**
+     * 发送忘记密码验证码（手机号必须已注册）
+     */
+    @PostMapping("/sendResetCode")
+    public R<String> sendResetCode(@RequestBody Map<String, String> params) {
+        String phone = params.get("phone");
+        if (phone == null || phone.isEmpty()) {
+            return R.createError("手机号不能为空");
+        }
+
+        Map<String, Object> result = userService.sendResetPasswordCode(phone);
+        if ((Boolean) result.get("success")) {
+            return R.createSuccess((String) result.get("message"));
+        } else {
+            return R.createError((String) result.get("message"));
+        }
+    }
+
+    /**
+     * 重置密码（忘记密码功能）
+     */
+    @PostMapping("/resetPassword")
+    public R<String> resetPassword(@RequestBody Map<String, String> params) {
+        String phone = params.get("phone");
+        String code = params.get("code");
+        String newPassword = params.get("newPassword");
+
+        if (phone == null || phone.isEmpty()) {
+            return R.createError("手机号不能为空");
+        }
+        if (code == null || code.isEmpty()) {
+            return R.createError("验证码不能为空");
+        }
+        if (newPassword == null || newPassword.isEmpty()) {
+            return R.createError("新密码不能为空");
+        }
+        if (newPassword.length() < 6) {
+            return R.createError("密码长度不能少于6位");
+        }
+
+        Map<String, Object> result = userService.resetPassword(phone, code, newPassword);
+        if ((Boolean) result.get("success")) {
+            return R.createSuccess((String) result.get("message"));
+        } else {
+            return R.createError((String) result.get("message"));
+        }
+    }
 }

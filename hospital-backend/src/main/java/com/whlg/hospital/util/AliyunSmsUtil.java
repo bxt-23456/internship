@@ -20,7 +20,7 @@ import javax.annotation.PostConstruct;
  * aliyun.sms.access-key-secret: 阿里云 AccessKey Secret
  * aliyun.sms.endpoint: 阿里云短信服务端点
  */
-//@Component
+@Component
 public class AliyunSmsUtil {
 
     @Value("${aliyun.sms.access-key-id}")

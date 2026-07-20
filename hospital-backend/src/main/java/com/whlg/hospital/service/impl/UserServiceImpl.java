@@ -27,8 +27,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private JwtUtil jwtUtil;
 
-    //@Autowired
-    //private AliyunSmsUtil aliyunSmsUtil;
+    @Autowired
+    private AliyunSmsUtil aliyunSmsUtil;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -72,9 +72,49 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 发送短信
             try {
                 String templateParam = "{\"code\":\"" + code + "\",\"min\":\"5\"}";
-                //aliyunSmsUtil.sendSmsVerifyCode(phone, SMS_SIGN_NAME, SMS_TEMPLATE_CODE, templateParam);
+                aliyunSmsUtil.sendSmsVerifyCode(phone, SMS_SIGN_NAME, SMS_TEMPLATE_CODE, templateParam);
             } catch (Exception smsException) {
                 // 短信发送失败不影响验证码存储，打印日志继续
+                System.err.println("短信发送异常（验证码已存入Redis）: " + smsException.getMessage());
+            }
+
+            result.put("success", true);
+            result.put("message", "验证码已发送到手机，请注意查收");
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("message", "验证码发送失败，请稍后重试");
+        }
+
+        return result;
+    }
+
+    @Override
+    public Map<String, Object> sendResetPasswordCode(String phone) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 检查手机号是否已注册（忘记密码场景必须已注册）
+        LambdaQueryWrapper<User> phoneQuery = new LambdaQueryWrapper<>();
+        phoneQuery.eq(User::getPhone, phone);
+        if (this.count(phoneQuery) == 0) {
+            result.put("success", false);
+            result.put("message", "该手机号未注册");
+            return result;
+        }
+
+        try {
+            // 生成6位验证码
+            String code = AliyunSmsUtil.generateVerificationCode();
+
+            // 存入Redis，5分钟过期
+            String redisKey = SMS_CODE_PREFIX + phone;
+            redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES);
+
+            // 发送短信
+            try {
+                String templateParam = "{\"code\":\"" + code + "\",\"min\":\"5\"}";
+                aliyunSmsUtil.sendSmsVerifyCode(phone, SMS_SIGN_NAME, SMS_TEMPLATE_CODE, templateParam);
+            } catch (Exception smsException) {
                 System.err.println("短信发送异常（验证码已存入Redis）: " + smsException.getMessage());
             }
 
@@ -295,5 +335,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 删除Redis中的登录状态
         String redisKey = USER_TOKEN_PREFIX + userId;
         redisTemplate.delete(redisKey);
+    }
+
+    @Override
+    public Map<String, Object> resetPassword(String phone, String code, String newPassword) {
+        Map<String, Object> result = new HashMap<>();
+
+        // 检查手机号是否已注册
+        LambdaQueryWrapper<User> phoneQuery = new LambdaQueryWrapper<>();
+        phoneQuery.eq(User::getPhone, phone);
+        User user = this.getOne(phoneQuery);
+        if (user == null) {
+            result.put("success", false);
+            result.put("message", "该手机号未注册");
+            return result;
+        }
+
+        // 校验验证码
+        String redisKey = SMS_CODE_PREFIX + phone;
+        Object cachedCode = redisTemplate.opsForValue().get(redisKey);
+        if (cachedCode == null) {
+            result.put("success", false);
+            result.put("message", "验证码已过期，请重新获取");
+            return result;
+        }
+        if (!cachedCode.toString().equals(code)) {
+            result.put("success", false);
+            result.put("message", "验证码错误");
+            return result;
+        }
+
+        // 更新密码
+        user.setPassword(newPassword);
+        user.setUpdateTime(LocalDateTime.now());
+        this.updateById(user);
+
+        // 删除已使用的验证码
+        redisTemplate.delete(redisKey);
+
+        result.put("success", true);
+        result.put("message", "密码重置成功");
+        return result;
     }
 }

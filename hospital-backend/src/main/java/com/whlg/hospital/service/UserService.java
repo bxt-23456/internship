@@ -18,6 +18,13 @@ public interface UserService extends IService<User> {
     Map<String, Object> sendVerifyCode(String phone);
 
     /**
+     * 发送短信验证码（用于忘记密码）
+     * @param phone 手机号
+     * @return 发送结果
+     */
+    Map<String, Object> sendResetPasswordCode(String phone);
+
+    /**
      * 用户注册
      * @param phone 手机号
      * @param password 密码
@@ -63,4 +70,13 @@ public interface UserService extends IService<User> {
      * @param userId 用户ID
      */
     void logout(Long userId);
+
+    /**
+     * 重置密码（忘记密码功能）
+     * @param phone 手机号
+     * @param code 短信验证码
+     * @param newPassword 新密码
+     * @return 操作结果
+     */
+    Map<String, Object> resetPassword(String phone, String code, String newPassword);
 }
