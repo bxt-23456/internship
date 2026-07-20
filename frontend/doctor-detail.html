@@ -302,6 +302,11 @@
             font-size: 13px;
             color: #999;
         }
+        .reviews .review-item .review-rating {
+            font-size: 14px;
+            color: #f57c00;
+            margin-bottom: 8px;
+        }
         .reviews .review-item .content {
             color: #666;
             font-size: 14px;
@@ -467,8 +472,18 @@
 
             <!-- 患者评价 -->
             <div class="reviews">
-                <div class="section-title">患者评价</div>
-                <div class="no-reviews">
+                <div class="section-title">患者评价（{{ reviews.length }}条）</div>
+                <div v-if="reviews.length > 0" class="review-list">
+                    <div v-for="review in reviews" :key="review.id" class="review-item">
+                        <div class="review-header">
+                            <span class="patient-name">{{ review.userName || '匿名用户' }}</span>
+                            <span class="time">{{ formatTime(review.createTime) }}</span>
+                        </div>
+                        <div class="review-rating">{{ formatStars(review.rating) }} {{ review.rating }}分</div>
+                        <div class="content">{{ review.content }}</div>
+                    </div>
+                </div>
+                <div v-else class="no-reviews">
                     暂无患者评价
                 </div>
             </div>
@@ -498,6 +513,10 @@
                 // 关注状态
                 doctorFollowed: false,
                 doctorFollowCount: 0,
+                // 评价列表
+                reviews: [],
+                // 排班数据（从数据库获取）
+                scheduleDays: [],
                 // 加载状态
                 loading: true
             },
@@ -508,35 +527,9 @@
                     // 按逗号、顿号、分号分割
                     return this.doctor.expertise.split(/[,，、；;/]/).filter(t => t.trim()).map(t => t.trim());
                 },
-                // 预约日期（从今天开始7天）
+                // 预约日期（从数据库获取的排班数据）
                 appointmentDays() {
-                    const days = [];
-                    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-                    const today = new Date();
-
-                    for (let i = 0; i < 7; i++) {
-                        const date = new Date(today);
-                        date.setDate(today.getDate() + i);
-
-                        const year = date.getFullYear();
-                        const month = String(date.getMonth() + 1).padStart(2, '0');
-                        const day = String(date.getDate()).padStart(2, '0');
-                        const weekday = weekdays[date.getDay()];
-
-                        // 随机生成是否有号（模拟数据）
-                        const available = Math.random() > 0.3;
-                        // 随机生成剩余号源数量
-                        const remainCount = Math.floor(Math.random() * 50) + 10;
-
-                        days.push({
-                            date: date.toISOString().split('T')[0],
-                            dateStr: `${year}-${month}-${day}`,
-                            weekday: weekday,
-                            remainCount: remainCount,
-                            available: available
-                        });
-                    }
-                    return days;
+                    return this.scheduleDays;
                 }
             },
             methods: {
@@ -660,10 +653,56 @@
                         return;
                     }
                     window.location.href = 'phone-consult.html?doctorId=' + this.doctor.id;
+                },
+                // 加载医生评价列表
+                async loadReviews() {
+                    const id = this.doctorId || this.getUrlParam('id');
+                    if (!id) return;
+                    try {
+                        const response = await axios.get('/review/doctor', {
+                            params: { doctorId: id }
+                        });
+                        if (response.data.code === 20000) {
+                            this.reviews = response.data.data || [];
+                        }
+                    } catch (error) {
+                        console.error('获取医生评价失败:', error);
+                    }
+                },
+                // 加载医生排班数据
+                async loadSchedule() {
+                    const id = this.doctorId || this.getUrlParam('id');
+                    if (!id) return;
+                    try {
+                        const response = await axios.get('/reservation/scheduleSummary', {
+                            params: { doctorId: id }
+                        });
+                        if (response.data.code === 20000) {
+                            this.scheduleDays = response.data.data || [];
+                        }
+                    } catch (error) {
+                        console.error('获取排班数据失败:', error);
+                    }
+                },
+                // 格式化评分星星
+                formatStars(rating) {
+                    const score = Number(rating || 0);
+                    return '★★★★★'.slice(0, score) + '☆☆☆☆☆'.slice(0, 5 - score);
+                },
+                // 格式化时间
+                formatTime(time) {
+                    if (!time) return '';
+                    const date = new Date(time);
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    return `${year}-${month}-${day}`;
                 }
             },
             mounted() {
                 this.loadDoctor();
+                this.loadReviews();
+                this.loadSchedule();
             }
         });
     </script>

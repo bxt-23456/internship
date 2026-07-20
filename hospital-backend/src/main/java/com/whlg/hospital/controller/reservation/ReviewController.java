@@ -30,4 +30,9 @@ public class ReviewController {
     public R<List<ReviewVo>> list(@RequestParam Long userId) {
         return R.createSuccess(reviewService.listByUserId(userId));
     }
+
+    @GetMapping("/doctor")
+    public R<List<ReviewVo>> listByDoctorId(@RequestParam Long doctorId) {
+        return R.createSuccess(reviewService.listByDoctorId(doctorId));
+    }
 }

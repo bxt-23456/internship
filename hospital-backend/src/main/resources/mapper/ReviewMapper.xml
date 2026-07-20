@@ -6,7 +6,7 @@
 
     <!-- 查询指定医生的评价列表（关联用户表获取用户名和头像） -->
     <select id="selectReviewVoByDoctorId" parameterType="long" resultType="ReviewVo">
-        SELECT r.id, r.user_id userId, u.username, u.avatar userAvatar,
+        SELECT r.id, r.user_id userId, u.username userName, u.avatar userAvatar,
                r.rating, r.content, r.order_type orderType, r.create_time createTime
         FROM t_review r
                  LEFT JOIN t_user u ON r.user_id = u.id
