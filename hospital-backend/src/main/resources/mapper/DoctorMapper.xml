@@ -119,4 +119,18 @@
                  )
     </select>
 
+    <!-- 根据科室ID查询推荐医生（按评分、接诊数排序） -->
+    <select id="selectDoctorsByDepartmentId" resultType="DoctorVo">
+        SELECT d.id, d.name doctorName, d.title, d.avatar,
+               h.name hospitalName, dt.name departmentName
+        FROM t_doctor d
+        INNER JOIN t_hospital h ON d.hospital_id = h.id
+        INNER JOIN t_department dt ON d.department_id = dt.id
+        WHERE d.department_id = #{departmentId} AND d.status = 1
+        ORDER BY d.rating DESC, d.consult_count DESC
+        <if test="limit != null">
+            LIMIT #{limit}
+        </if>
+    </select>
+
 </mapper>

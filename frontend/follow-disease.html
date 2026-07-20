@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <title>关注的疾病 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
+    <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -317,7 +319,8 @@
                 activeMenu: 'followDisease',
                 currentPage: 1,
                 pageSize: 5,
-                diseases: []
+                diseases: [],
+                loading: true
             },
             computed: {
                 totalPages() {
@@ -373,58 +376,38 @@
                 },
                 unfollowDisease(id) {
                     if (confirm('确定取消关注该疾病吗？')) {
-                        this.diseases = this.diseases.filter(d => d.id !== id);
-                        if (this.currentPage > this.totalPages && this.currentPage > 1) {
-                            this.currentPage--;
-                        }
-                        alert('取消关注成功');
+                        axios.post('/follow/toggle', null, {
+                            params: { followType: 3, followId: id }
+                        }).then(response => {
+                            if (response.data.code === 20000) {
+                                this.diseases = this.diseases.filter(d => d.id !== id);
+                                if (this.currentPage > this.totalPages && this.currentPage > 1) {
+                                    this.currentPage--;
+                                }
+                                alert('取消关注成功');
+                            } else {
+                                alert(response.data.message || '操作失败');
+                            }
+                        }).catch(error => {
+                            console.error('取消关注失败:', error);
+                            alert('操作失败，请检查网络或登录状态');
+                        });
                     }
                 },
                 loadDiseases() {
-                    this.diseases = [
-                        { 
-                            id: 1, 
-                            name: '高血压', 
-                            alias: '高血压病、原发性高血压',
-                            description: '高血压是一种常见的慢性疾病，需要长期控制和管理。',
-                            image: 'img/disease.jpg'
-                        },
-                        { 
-                            id: 2, 
-                            name: '糖尿病', 
-                            alias: '消渴病、血糖异常',
-                            description: '糖尿病是一组以高血糖为特征的代谢性疾病。',
-                            image: 'img/disease.jpg'
-                        },
-                        { 
-                            id: 3, 
-                            name: '冠心病', 
-                            alias: '冠状动脉粥样硬化性心脏病、缺血性心脏病',
-                            description: '冠心病是冠状动脉粥样硬化性心脏病的简称。',
-                            image: 'img/disease.jpg'
-                        },
-                        { 
-                            id: 4, 
-                            name: '哮喘', 
-                            alias: '支气管哮喘、喘息性支气管炎',
-                            description: '哮喘是一种慢性气道炎症性疾病，表现为反复发作的喘息。',
-                            image: 'img/disease.jpg'
-                        },
-                        { 
-                            id: 5, 
-                            name: '胃溃疡', 
-                            alias: '胃疡、消化性溃疡',
-                            description: '胃溃疡是胃黏膜被胃酸和胃蛋白酶消化而形成的慢性溃疡。',
-                            image: 'img/disease.jpg'
-                        },
-                        { 
-                            id: 6, 
-                            name: '颈椎病', 
-                            alias: '颈椎综合征、颈椎骨关节炎',
-                            description: '颈椎病是颈椎间盘退行性变及其继发性改变引起的一系列症状。',
-                            image: 'img/disease.jpg'
+                    this.loading = true;
+                    axios.get('/follow/diseases').then(response => {
+                        if (response.data.code === 20000) {
+                            this.diseases = response.data.data || [];
+                        } else {
+                            alert(response.data.message || '加载失败，请先登录');
                         }
-                    ];
+                    }).catch(error => {
+                        console.error('加载关注疾病列表失败:', error);
+                        alert('加载失败，请检查网络或登录状态');
+                    }).finally(() => {
+                        this.loading = false;
+                    });
                 }
             },
             mounted() {

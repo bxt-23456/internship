@@ -32,4 +32,12 @@ public interface DoctorMapper extends BaseMapper<Doctor> {
 
     List<ReservationSlotVo> getReservationSlots(@Param("doctorId") Long doctorId,
                                                 @Param("scheduleDate") String scheduleDate);
+
+    /**
+     * 根据科室ID查询推荐医生（按评分、接诊数排序）
+     * @param departmentId 科室ID
+     * @param limit 限制数量
+     * @return 医生列表
+     */
+    List<DoctorVo> selectDoctorsByDepartmentId(@Param("departmentId") Long departmentId, @Param("limit") Integer limit);
 }

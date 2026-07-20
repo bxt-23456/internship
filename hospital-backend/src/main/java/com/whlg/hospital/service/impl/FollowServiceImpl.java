@@ -4,12 +4,15 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.whlg.hospital.entity.Doctor;
 import com.whlg.hospital.entity.Follow;
 import com.whlg.hospital.entity.Hospital;
+import com.whlg.hospital.entity.Disease;
 import com.whlg.hospital.mapper.DoctorMapper;
 import com.whlg.hospital.mapper.FollowMapper;
 import com.whlg.hospital.mapper.HospitalMapper;
+import com.whlg.hospital.mapper.DiseaseMapper;
 import com.whlg.hospital.service.FollowService;
 import com.whlg.hospital.vo.DoctorVo;
 import com.whlg.hospital.vo.HospitalVo;
+import com.whlg.hospital.vo.DiseaseVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +34,9 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
 
     @Autowired
     private DoctorMapper doctorMapper;
+
+    @Autowired
+    private DiseaseMapper diseaseMapper;
 
     @Override
     @Transactional
@@ -79,6 +85,11 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
     }
 
     @Override
+    public List<DiseaseVo> getFollowedDiseases(Long userId) {
+        return followMapper.selectFollowedDiseases(userId);
+    }
+
+    @Override
     public int getFollowCount(Integer followType, Long followId) {
         return followMapper.countByTarget(followType, followId);
     }
@@ -105,6 +116,14 @@ public class FollowServiceImpl extends ServiceImpl<FollowMapper, Follow> impleme
                 if (newCount < 0) newCount = 0;
                 doctor.setFollowCount(newCount);
                 doctorMapper.updateById(doctor);
+            }
+        } else if (followType == 3) { // 疾病
+            Disease disease = diseaseMapper.selectById(followId);
+            if (disease != null) {
+                int newCount = (disease.getFollowCount() != null ? disease.getFollowCount() : 0) + delta;
+                if (newCount < 0) newCount = 0;
+                disease.setFollowCount(newCount);
+                diseaseMapper.updateById(disease);
             }
         }
     }
