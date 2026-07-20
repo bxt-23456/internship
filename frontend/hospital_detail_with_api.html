@@ -629,14 +629,23 @@
                             params: {
                                 followType: 1,
                                 followId: this.hospitalId
-                            }
+                            },
+                            _skipAuthRedirect: true
                         });
                         if (response.data.code === 20000) {
                             this.hospitalFollowed = response.data.data;
+                        } else {
+                            this.hospitalFollowed = false;
                         }
                     } catch (error) {
                         console.error('检查关注状态失败:', error);
                         this.hospitalFollowed = false;
+                    }
+                },
+                promptLogin() {
+                    if (confirm('该操作需要登录，是否前往登录？')) {
+                        const currentUrl = encodeURIComponent(window.location.href);
+                        window.location.href = 'login.html?redirect=' + currentUrl;
                     }
                 },
                 async toggleHospitalFollow() {
@@ -645,7 +654,8 @@
                             params: {
                                 followType: 1,
                                 followId: this.hospitalId
-                            }
+                            },
+                            _skipAuthRedirect: true
                         });
                         if (response.data.code === 20000) {
                             this.hospitalFollowed = response.data.data;
@@ -656,12 +666,14 @@
                             } else {
                                 alert('已取消关注');
                             }
+                        } else if (response.data.code === 30001) {
+                            this.promptLogin();
                         } else {
-                            alert(response.data.message || '操作失败，请先登录');
+                            alert(response.data.message || '操作失败');
                         }
                     } catch (error) {
                         console.error('关注操作失败:', error);
-                        alert('操作失败，请检查网络或登录状态');
+                        alert('操作失败，请检查网络');
                     }
                 },
                 async loadFollowCount() {

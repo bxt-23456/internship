@@ -1,6 +1,5 @@
 package com.whlg.hospital.controller;
 
-import com.whlg.hospital.entity.User;
 import com.whlg.hospital.service.FollowService;
 import com.whlg.hospital.util.R;
 import com.whlg.hospital.vo.DoctorVo;
@@ -9,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -30,13 +28,12 @@ public class FollowController {
             @RequestParam Integer followType,
             @RequestParam Long followId,
             HttpServletRequest request) {
-        // 从session获取用户信息
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return R.createError(20001, "请先登录");
         }
 
-        boolean followed = followService.toggleFollow(user.getId(), followType, followId);
+        boolean followed = followService.toggleFollow(userId, followType, followId);
         return R.createSuccess(followed);
     }
 
@@ -48,13 +45,12 @@ public class FollowController {
             @RequestParam Integer followType,
             @RequestParam Long followId,
             HttpServletRequest request) {
-        // 从session获取用户信息
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return R.createSuccess(false);
         }
 
-        boolean followed = followService.isFollowed(user.getId(), followType, followId);
+        boolean followed = followService.isFollowed(userId, followType, followId);
         return R.createSuccess(followed);
     }
 
@@ -63,13 +59,12 @@ public class FollowController {
      */
     @GetMapping("/hospitals")
     public R<List<HospitalVo>> getFollowedHospitals(HttpServletRequest request) {
-        // 从session获取用户信息
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return R.createError(20001, "请先登录");
         }
 
-        List<HospitalVo> hospitals = followService.getFollowedHospitals(user.getId());
+        List<HospitalVo> hospitals = followService.getFollowedHospitals(userId);
         return R.createSuccess(hospitals);
     }
 
@@ -78,13 +73,12 @@ public class FollowController {
      */
     @GetMapping("/doctors")
     public R<List<DoctorVo>> getFollowedDoctors(HttpServletRequest request) {
-        // 从session获取用户信息
-        User user = (User) request.getSession().getAttribute("user");
-        if (user == null) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return R.createError(20001, "请先登录");
         }
 
-        List<DoctorVo> doctors = followService.getFollowedDoctors(user.getId());
+        List<DoctorVo> doctors = followService.getFollowedDoctors(userId);
         return R.createSuccess(doctors);
     }
 

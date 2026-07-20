@@ -22,7 +22,7 @@ axios.interceptors.request.use(
 // http response 拦截器
 axios.interceptors.response.use(
   response => {
-    if (response.data.code === 30001) {
+    if (response.data.code === 30001 && !response.config._skipAuthRedirect) {
       console.log("非法token或已过期");
 	  // 获取当前页面URL，用于登录成功后跳转回来
 	  const currentUrl = encodeURIComponent(window.location.href);

@@ -75,7 +75,7 @@ public class UserController {
      * 用户登录
      */
     @PostMapping("/login")
-    public R<Map<String, Object>> login(@RequestBody Map<String, String> params, HttpServletRequest request) {
+    public R<Map<String, Object>> login(@RequestBody Map<String, String> params) {
         String phone = params.get("phone");
         String password = params.get("password");
 
@@ -88,16 +88,6 @@ public class UserController {
 
         Map<String, Object> result = userService.login(phone, password);
         if ((Boolean) result.get("success")) {
-            // 将用户信息存储到Session中
-            @SuppressWarnings("unchecked")
-            Map<String, Object> userInfo = (Map<String, Object>) result.get("userInfo");
-            if (userInfo != null) {
-                User user = new User();
-                user.setId((Long) userInfo.get("id"));
-                user.setUsername((String) userInfo.get("username"));
-                user.setAvatar((String) userInfo.get("avatar"));
-                request.getSession().setAttribute("user", user);
-            }
             return R.createSuccess(result);
         } else {
             return R.createError((String) result.get("message"));
@@ -109,12 +99,12 @@ public class UserController {
      */
     @GetMapping("/info")
     public R<User> getUserInfo(HttpServletRequest request) {
-        User sessionUser = (User) request.getSession().getAttribute("user");
-        if (sessionUser == null) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return R.createError(20001, "请先登录");
         }
         // 从数据库查询完整用户信息
-        User user = userService.getUserInfo(sessionUser.getId());
+        User user = userService.getUserInfo(userId);
         return R.createSuccess(user);
     }
 
@@ -123,7 +113,10 @@ public class UserController {
      */
     @PostMapping("/logout")
     public R<String> logout(HttpServletRequest request) {
-        request.getSession().invalidate();
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId != null) {
+            userService.logout(userId);
+        }
         return R.createSuccess("退出成功");
     }
 
@@ -132,13 +125,13 @@ public class UserController {
      */
     @PutMapping("/info")
     public R<Boolean> updateUser(@RequestBody User user, HttpServletRequest request) {
-        User currentUser = (User) request.getSession().getAttribute("user");
-        if (currentUser == null) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return R.createError(20001, "请先登录");
         }
 
-        // 根据session中的用户id查询完整用户信息（含phone）
-        User dbUser = userService.getUserInfo(currentUser.getId());
+        // 根据用户id查询完整用户信息（含phone）
+        User dbUser = userService.getUserInfo(userId);
         if (dbUser == null || dbUser.getPhone() == null) {
             return R.createError(20001, "用户信息异常，请重新登录");
         }
@@ -149,11 +142,6 @@ public class UserController {
 
         String result = userService.updateUserInfo(user);
         if ("更新成功".equals(result)) {
-            // 更新Session中的用户信息
-            if (user.getUsername() != null) {
-                currentUser.setUsername(user.getUsername());
-            }
-            request.getSession().setAttribute("user", currentUser);
             return R.createSuccess(true);
         } else {
             return R.createError(result);
@@ -165,15 +153,15 @@ public class UserController {
      */
     @PostMapping("/changePassword")
     public R<String> changePassword(@RequestBody Map<String, String> params, HttpServletRequest request) {
-        User currentUser = (User) request.getSession().getAttribute("user");
-        if (currentUser == null) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
             return R.createError(20001, "请先登录");
         }
 
         String oldPassword = params.get("oldPassword");
         String newPassword = params.get("newPassword");
 
-        String result = userService.changePassword(currentUser.getId(), oldPassword, newPassword);
+        String result = userService.changePassword(userId, oldPassword, newPassword);
         if ("密码修改成功".equals(result)) {
             return R.createSuccess(result);
         } else {

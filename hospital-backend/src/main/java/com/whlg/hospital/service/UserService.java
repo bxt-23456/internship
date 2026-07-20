@@ -57,4 +57,10 @@ public interface UserService extends IService<User> {
      * @return 修改结果消息
      */
     String changePassword(Long userId, String oldPassword, String newPassword);
+
+    /**
+     * 退出登录，清除Redis中的登录状态
+     * @param userId 用户ID
+     */
+    void logout(Long userId);
 }

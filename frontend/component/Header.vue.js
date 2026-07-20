@@ -65,11 +65,21 @@ Vue.component('header-component', {
             }
         },
         handleLogout() {
-            localStorage.removeItem('token');
-            localStorage.removeItem('userInfo');
-            this.isLoggedIn = false;
-            this.displayName = '';
-            window.location.href = 'index.html';
+            // 调用后端退出登录接口，清除Redis中的登录状态
+            axios.post('/user/logout').then(() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                this.isLoggedIn = false;
+                this.displayName = '';
+                window.location.href = 'index.html';
+            }).catch(() => {
+                // 即使后端调用失败，也清除本地状态
+                localStorage.removeItem('token');
+                localStorage.removeItem('userInfo');
+                this.isLoggedIn = false;
+                this.displayName = '';
+                window.location.href = 'index.html';
+            });
         }
     }
 });

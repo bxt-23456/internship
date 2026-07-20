@@ -5,21 +5,33 @@ import com.whlg.hospital.util.JwtUtil;
 import com.whlg.hospital.util.R;
 import com.whlg.hospital.util.StatusCode;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
- * JWT拦截器 - 验证token有效性
+ * JWT拦截器 - 验证token有效性并检查Redis中的登录状态
  */
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
 
+    /** Redis中用户token的key前缀 */
+    private static final String USER_TOKEN_PREFIX = "user:token:";
+
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
+    @Value("${user.token.expiration:60}")
+    private Long tokenExpiration;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -35,14 +47,35 @@ public class JwtInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        // 验证token
+        // 验证JWT token
         if (!jwtUtil.validateToken(token)) {
             writeError(response, StatusCode.TOKEN_EXPIRE, "登录已过期，请重新登录");
             return false;
         }
 
-        // 将用户ID存入request attribute，方便后续Controller使用
+        // 从JWT中获取用户ID
         Long userId = jwtUtil.getUserIdFromToken(token);
+
+        // 检查Redis中的登录状态
+        String redisKey = USER_TOKEN_PREFIX + userId;
+        Object cachedToken = redisTemplate.opsForValue().get(redisKey);
+
+        if (cachedToken == null) {
+            // Redis中无状态，登录已过期
+            writeError(response, StatusCode.TOKEN_EXPIRE, "登录状态已过期，请重新登录");
+            return false;
+        }
+
+        // 比对token是否一致（防止旧token生效）
+        if (!token.equals(cachedToken.toString())) {
+            writeError(response, StatusCode.TOKEN_EXPIRE, "登录状态已失效，请重新登录");
+            return false;
+        }
+
+        // 验证通过，重置Redis过期时间
+        redisTemplate.expire(redisKey, tokenExpiration, TimeUnit.SECONDS);
+
+        // 将用户ID存入request attribute，方便后续Controller使用
         request.setAttribute("userId", userId);
 
         return true;

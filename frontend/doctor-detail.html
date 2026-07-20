@@ -580,13 +580,23 @@
                 async checkFollowStatus() {
                     try {
                         const response = await axios.get('/follow/check', {
-                            params: { followType: 2, followId: this.doctorId }
+                            params: { followType: 2, followId: this.doctorId },
+                            _skipAuthRedirect: true
                         });
                         if (response.data.code === 20000) {
                             this.doctorFollowed = response.data.data;
+                        } else {
+                            this.doctorFollowed = false;
                         }
                     } catch (error) {
                         console.error('查询关注状态失败:', error);
+                    }
+                },
+                // 提示用户登录
+                promptLogin() {
+                    if (confirm('该操作需要登录，是否前往登录？')) {
+                        const currentUrl = encodeURIComponent(window.location.href);
+                        window.location.href = 'login.html?redirect=' + currentUrl;
                     }
                 },
                 // 获取医生被关注的数量
@@ -606,7 +616,8 @@
                 async toggleDoctorFollow() {
                     try {
                         const response = await axios.post('/follow/toggle', null, {
-                            params: { followType: 2, followId: this.doctorId }
+                            params: { followType: 2, followId: this.doctorId },
+                            _skipAuthRedirect: true
                         });
                         if (response.data.code === 20000) {
                             this.doctorFollowed = response.data.data;
@@ -617,12 +628,14 @@
                                 this.doctorFollowCount--;
                                 alert('已取消关注');
                             }
+                        } else if (response.data.code === 30001) {
+                            this.promptLogin();
                         } else {
                             alert(response.data.message || '操作失败');
                         }
                     } catch (error) {
                         console.error('关注操作失败:', error);
-                        alert('操作失败，请检查网络或登录状态');
+                        alert('操作失败，请检查网络');
                     }
                 },
                 // 处理预约
