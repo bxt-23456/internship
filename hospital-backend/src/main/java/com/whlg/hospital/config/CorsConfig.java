@@ -22,7 +22,11 @@ public class CorsConfig {
             "http://127.0.0.1:8080",
             "http://127.0.0.1:5500",
             "http://localhost:5500",
-            "http://localhost:57596"
+            "http://localhost:57596",
+            "https://1120ee0d.r2.cpolar.top",
+            "http://1120ee0d.r2.cpolar.top",
+            "https://6a8c7eb.r2.cpolar.top",
+            "http://6a8c7eb.r2.cpolar.top"
     );
 
     @Bean

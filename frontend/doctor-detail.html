@@ -560,11 +560,10 @@
                         });
                         if (response.data.code === 20000) {
                             this.doctor = response.data.data;
+                            // 从医生详情数据中获取关注数（数据库中的值）
                             this.doctorFollowCount = this.doctor.followCount || 0;
                             // 查询关注状态
                             this.checkFollowStatus();
-                            // 获取关注数量
-                            this.loadFollowCount();
                         } else {
                             console.error('获取医生详情失败:', response.data.message);
                             this.doctor = null;
