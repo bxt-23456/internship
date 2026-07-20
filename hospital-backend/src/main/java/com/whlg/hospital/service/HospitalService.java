@@ -57,4 +57,11 @@ public interface HospitalService extends IService<Hospital> {
      * @return 科室树形结构
      */
     List<DepartmentTreeVo> getHospitalDepartmentTree(Long hospitalId);
+
+    /**
+     * 搜索医院
+     * @param keyword 关键词
+     * @return 医院列表
+     */
+    List<Hospital> searchHospitals(String keyword);
 }

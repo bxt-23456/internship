@@ -5,6 +5,7 @@
     <title>搜索医院 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -316,8 +317,6 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8080';
-
         new Vue({
             el: '#app',
             data: {
@@ -416,7 +415,7 @@
                     this.loading = true;
                     try {
                         // 从后端API获取所有医院数据
-                        const response = await axios.get(`${API_BASE_URL}/hospital/list`, {
+                        const response = await axios.get('/hospital/list', {
                             params: { page: 1, pageSize: 100 }
                         });
                         if (response.data.code === 20000) {

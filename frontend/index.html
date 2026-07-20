@@ -5,6 +5,7 @@
     <title>在线医院预约挂号</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -383,10 +384,10 @@
             <div class="section">
                 <div class="section-header">
                     <div class="section-title">推荐医院</div>
-                    <a href="hospital.html" class="more-link">查看更多 ></a>
+                    <a href="hospital_with_api.html" class="more-link">查看更多 ></a>
                 </div>
                 <div class="hospital-list">
-                    <a v-for="hospital in hospitals" :key="hospital.id" :href="'hospital-detail.html?hospitalId=' + hospital.id" class="hospital-item">
+                    <a v-for="hospital in hospitals" :key="hospital.id" :href="'hospital_detail_with_api.html?hospitalId=' + hospital.id" class="hospital-item">
                         <img :src="hospital.image" :alt="hospital.name">
                         <h3>{{ hospital.name }}</h3>
                         <p>{{ hospital.address }}</p>
@@ -481,7 +482,7 @@
                 // 获取推荐医院
                 async fetchHospitals() {
                     try {
-                        const response = await axios.get('http://localhost:8080/index/listTopHospitalVo?limit=4');
+                        const response = await axios.get('/index/listTopHospitalVo', { params: { limit: 4 } });
                         if (response.data.code === 20000) {
                             this.hospitals = response.data.data;
                         }
@@ -492,7 +493,7 @@
                 // 获取推荐医生
                 async fetchDoctors() {
                     try {
-                        const response = await axios.get('http://localhost:8080/index/listTopDoctorVo?limit=5');
+                        const response = await axios.get('/index/listTopDoctorVo', { params: { limit: 5 } });
                         if (response.data.code === 20000) {
                             this.doctors = response.data.data.map(doctor => ({
                                 id: doctor.id,
@@ -510,7 +511,7 @@
                 // 获取热门疾病
                 async fetchDiseases() {
                     try {
-                        const response = await axios.get('http://localhost:8080/index/listTopDisease?limit=8');
+                        const response = await axios.get('/index/listTopDisease', { params: { limit: 8 } });
                         if (response.data.code === 20000) {
                             this.diseases = response.data.data.map(disease => ({
                                 id: disease.id,
@@ -526,7 +527,7 @@
                 // 获取最新文章
                 async fetchArticles() {
                     try {
-                        const response = await axios.get('http://localhost:8080/index/listTopArticle?limit=4');
+                        const response = await axios.get('/index/listTopArticle', { params: { limit: 4 } });
                         if (response.data.code === 20000) {
                             this.articles = response.data.data.map(article => ({
                                 id: article.id,

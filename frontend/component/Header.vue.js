@@ -61,7 +61,7 @@ Vue.component('header-component', {
         },
         handleSearch() {
             if (this.searchText.trim()) {
-                window.location.href = 'search-hospital.html?keyword=' + encodeURIComponent(this.searchText);
+                window.location.href = 'search.html?keyword=' + encodeURIComponent(this.searchText);
             }
         },
         handleLogout() {

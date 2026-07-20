@@ -23,4 +23,7 @@ public interface DoctorService extends IService<Doctor> {
 
     //根据ID查询医生详情
     public DoctorDetailVo getDoctorDetailById(Long id);
+
+    //搜索医生
+    public List<Doctor> searchDoctors(String keyword);
 }

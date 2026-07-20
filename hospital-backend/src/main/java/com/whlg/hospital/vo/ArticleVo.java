@@ -26,4 +26,6 @@ public class ArticleVo {
     private Integer status;
     private LocalDateTime publishTime;
     private LocalDateTime createTime;
+    private String subCategory;
+    private String date;
 }

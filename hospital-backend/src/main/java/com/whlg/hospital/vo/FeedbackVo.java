@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 反馈VO
@@ -18,10 +19,16 @@ public class FeedbackVo {
     private Long userId;
     private String userName;
     private Integer feedbackType;
+    private String typeText;
     private String content;
     private String images;
+    private List<String> imagesList;
     private Integer status;
+    private String statusText;
     private String replyContent;
+    private String reply;
     private LocalDateTime replyTime;
     private LocalDateTime createTime;
+    private String createTimeText;
+    private String replyTimeText;
 }

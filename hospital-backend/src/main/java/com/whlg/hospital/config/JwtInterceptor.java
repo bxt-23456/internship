@@ -41,6 +41,10 @@ public class JwtInterceptor implements HandlerInterceptor {
             return false;
         }
 
+        // 将用户ID存入request attribute，方便后续Controller使用
+        Long userId = jwtUtil.getUserIdFromToken(token);
+        request.setAttribute("userId", userId);
+
         return true;
     }
 

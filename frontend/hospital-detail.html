@@ -5,6 +5,7 @@
     <title>医院详情 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -556,60 +557,19 @@
                 loadHospitalData() {
                     this.hospitalId = this.getUrlParam('hospitalId');
                     
-                    // 模拟医院数据
-                    const hospitals = [
-                        {
-                            id: 1,
-                            name: '北京协和医院',
-                            level: '三级甲等',
-                            image: 'img/hospital_100001977.jpg',
-                            address: '北京市东城区东单北大街',
-                            phone: '010-12345678',
-                            route: '地铁1号线东单站B口出，步行约5分钟',
-                            introduction: '北京协和医院是中国顶尖的综合性医院，拥有悠久的历史和卓越的医疗水平。医院设有多个国家级重点学科，拥有众多知名专家和先进的医疗设备，为患者提供高质量的医疗服务。',
-                            departments: [1, 2, 3, 4, 5, 6, 7]
-                        },
-                        {
-                            id: 2,
-                            name: '上海瑞金医院',
-                            level: '三级甲等',
-                            image: 'img/hospital_14616536073112.jpg',
-                            address: '上海市黄浦区瑞金二路',
-                            phone: '021-87654321',
-                            route: '地铁9号线打浦桥站出，步行约8分钟',
-                            introduction: '上海瑞金医院是上海知名的三甲医院，在心血管疾病、血液疾病等领域具有很高的学术地位和临床水平。医院注重科研创新和人才培养，是医学教育的重要基地。',
-                            departments: [1, 2, 3, 5, 7, 8]
-                        },
-                        {
-                            id: 3,
-                            name: '广州中山医院',
-                            level: '三级甲等',
-                            image: 'img/hospital_16043929044175.jpg',
-                            address: '广州市越秀区东风西路',
-                            phone: '020-23456789',
-                            route: '地铁2号线纪念堂站D2口出，步行约3分钟',
-                            introduction: '广州中山医院是华南地区重要的医疗中心，在肿瘤治疗、器官移植等方面具有优势。医院秉承"以人为本"的服务理念，为患者提供优质、高效的医疗服务。',
-                            departments: [1, 2, 4, 5, 6, 9]
-                        },
-                        {
-                            id: 4,
-                            name: '杭州浙一医院',
-                            level: '三级甲等',
-                            image: 'img/hospital_16195932543164.png',
-                            address: '杭州市上城区庆春路',
-                            phone: '0571-98765432',
-                            route: '地铁2号线庆春广场站出，步行约6分钟',
-                            introduction: '浙江大学医学院附属第一医院是浙江省规模最大的综合性医院之一，在感染病诊治、肾脏病治疗等领域处于国内领先水平。医院拥有强大的医疗团队和先进的诊疗设备。',
-                            departments: [1, 3, 4, 6, 7, 8, 10]
-                        }
-                    ];
-                    
-                    this.hospital = hospitals.find(h => h.id == this.hospitalId);
-                    
-                    if (this.hospital) {
-                        this.loadDepartments();
-                        this.loadDoctors();
-                    }
+                    axios.get('/hospital/detail/' + this.hospitalId)
+                        .then(response => {
+                            if (response.data.code === 20000) {
+                                this.hospital = response.data.data;
+                                this.loadDepartments();
+                                this.loadDoctors();
+                            } else {
+                                console.error('加载医院详情失败:', response.data.message);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('请求医院详情接口失败:', error);
+                        });
                 },
                 // 加载科室数据
                 loadDepartments() {
@@ -700,49 +660,28 @@
                 },
                 // 加载医生数据
                 loadDoctors() {
-                    // 根据医院ID筛选医生
-                    const hospitalDoctors = {
-                        1: [
-                            { id: 1, name: '张明远', department: '心内科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['冠心病', '高血压'], online: true, departmentId: 11 },
-                            { id: 2, name: '李秀华', department: '呼吸内科', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['哮喘', '慢阻肺'], online: false, departmentId: 12 },
-                            { id: 3, name: '王建国', department: '消化内科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['胃肠疾病'], online: true, departmentId: 13 },
-                            { id: 4, name: '陈美玲', department: '肾内科', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['肾病'], online: true, departmentId: 14 },
-                            { id: 5, name: '张伟民', department: '内分泌科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['糖尿病'], online: false, departmentId: 15 },
-                            { id: 6, name: '刘芳华', department: '血液科', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['血液病'], online: false, departmentId: 16 },
-                            { id: 7, name: '赵强', department: '普外科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['腹部外科'], online: true, departmentId: 21 },
-                            { id: 8, name: '孙丽华', department: '骨科', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['关节置换'], online: true, departmentId: 22 },
-                            { id: 9, name: '郑晓燕', department: '妇科', avatar: 'img/doctor-female-doc.jpg', title: '主任医师', tags: ['妇科肿瘤'], online: true, departmentId: 31 },
-                            { id: 10, name: '王小刚', department: '小儿内科', avatar: 'img/doctor-male-doc.jpg', title: '副主任医师', tags: ['小儿呼吸'], online: true, departmentId: 41 },
-                            { id: 11, name: '罗峰', department: '关节外科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['关节疾病'], online: false, departmentId: 51 },
-                            { id: 12, name: '韩宇', department: '神经内科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['脑血管'], online: true, departmentId: 61 },
-                            { id: 13, name: '杨帆', department: '急诊内科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['急诊医学'], online: true, departmentId: 71 },
-                            { id: 14, name: '朱军', department: '急诊外科', avatar: 'img/doctor-male-doc.jpg', title: '副主任医师', tags: ['创伤急救'], online: true, departmentId: 72 }
-                        ],
-                        2: [
-                            { id: 15, name: '周伟', department: '心胸外科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['心脏外科'], online: false, departmentId: 23 },
-                            { id: 16, name: '吴敏', department: '神经外科', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['脑肿瘤'], online: true, departmentId: 24 },
-                            { id: 17, name: '黄丽华', department: '产科', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['高危妊娠'], online: false, departmentId: 32 },
-                            { id: 18, name: '梁伟', department: '脊柱外科', avatar: 'img/doctor-male-doc.jpg', title: '副主任医师', tags: ['脊柱疾病'], online: true, departmentId: 52 },
-                            { id: 19, name: '沈丽', department: '眼底病科', avatar: 'img/doctor-female-doc.jpg', title: '主任医师', tags: ['眼底疾病'], online: false, departmentId: 81 },
-                            { id: 20, name: '韩雪', department: '白内障中心', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['白内障'], online: true, departmentId: 82 }
-                        ],
-                        3: [
-                            { id: 21, name: '秦明', department: '神经外科', avatar: 'img/doctor-male-doc.jpg', title: '副主任医师', tags: ['神经外科'], online: false, departmentId: 62 },
-                            { id: 22, name: '谢敏', department: '创伤骨科', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['创伤'], online: true, departmentId: 53 },
-                            { id: 23, name: '曹伟', department: '耳科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['耳科疾病'], online: false, departmentId: 91 },
-                            { id: 24, name: '蒋敏', department: '鼻科', avatar: 'img/doctor-female-doc.jpg', title: '副主任医师', tags: ['鼻科疾病'], online: true, departmentId: 92 },
-                            { id: 25, name: '何亮', department: '新生儿科', avatar: 'img/doctor-male-doc.jpg', title: '主任医师', tags: ['新生儿'], online: true, departmentId: 43 }
-                        ],
-                        4: [
-                            { id: 26, name: '冯婷', department: '口腔内科', avatar: 'img/doctor-female-doc.jpg', title: '主任医师', tags: ['口腔内科'], online: true, departmentId: 101 },
-                            { id: 27, name: '袁浩', department: '口腔颌面外科', avatar: 'img/doctor-male-doc.jpg', title: '副主任医师', tags: ['颌面外科'], online: false, departmentId: 102 },
-                            { id: 28, name: '葛琳', department: '口腔修复科', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['修复'], online: true, departmentId: 103 },
-                            { id: 29, name: '许婷', department: '小儿外科', avatar: 'img/doctor-female-doc.jpg', title: '主治医师', tags: ['小儿外科'], online: false, departmentId: 42 },
-                            { id: 30, name: '唐亮', department: '屈光中心', avatar: 'img/doctor-male-doc.jpg', title: '主治医师', tags: ['屈光不正'], online: true, departmentId: 83 }
-                        ]
-                    };
-                    
-                    this.allDoctors = hospitalDoctors[this.hospitalId] || [];
+                    axios.get('/doctor/list', { params: { hospitalId: this.hospitalId } })
+                        .then(response => {
+                            if (response.data.code === 20000) {
+                                this.allDoctors = response.data.data.map(doctor => ({
+                                    id: doctor.id,
+                                    name: doctor.name,
+                                    department: doctor.departmentName,
+                                    avatar: doctor.avatar || 'img/doctor-male-doc.jpg',
+                                    title: doctor.title,
+                                    tags: doctor.specialty ? doctor.specialty.split(',') : [],
+                                    online: doctor.online === 1,
+                                    departmentId: doctor.departmentId
+                                }));
+                            } else {
+                                console.error('加载医生列表失败:', response.data.message);
+                                this.allDoctors = [];
+                            }
+                        })
+                        .catch(error => {
+                            console.error('请求医生列表接口失败:', error);
+                            this.allDoctors = [];
+                        });
                 },
                 selectPrimary(id) {
                     this.selectedPrimary = id;

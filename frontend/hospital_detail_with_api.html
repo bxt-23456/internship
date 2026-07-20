@@ -5,6 +5,7 @@
     <title>医院详情 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -467,10 +468,6 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8080';
-
-        // 配置axios默认允许跨域携带凭证
-        axios.defaults.withCredentials = true;
 
         new Vue({
             el: '#app',
@@ -543,7 +540,7 @@
                         return;
                     }
                     try {
-                        const response = await axios.get(`${API_BASE_URL}/hospital/detail/${this.hospitalId}`);
+                        const response = await axios.get('/hospital/detail/' + this.hospitalId);
                         if (response.data.code === 20000) {
                             this.hospital = response.data.data;
                             await Promise.all([
@@ -562,7 +559,7 @@
                 async loadDepartments() {
                     try {
                         // 使用新的树形API，一次获取所有科室数据
-                        const response = await axios.get(`${API_BASE_URL}/hospital/departments/tree/${this.hospitalId}`);
+                        const response = await axios.get('/hospital/departments/tree/' + this.hospitalId);
                         if (response.data.code === 20000) {
                             const tree = response.data.data;
                             if (tree && tree.length > 0) {
@@ -595,7 +592,7 @@
                 },
                 async loadDoctors() {
                     try {
-                        const response = await axios.get(`${API_BASE_URL}/doctor/list`, {
+                        const response = await axios.get('/doctor/list', {
                             params: { hospitalId: this.hospitalId }
                         });
                         if (response.data.code === 20000) {
@@ -628,7 +625,7 @@
                 },
                 async checkFollowStatus() {
                     try {
-                        const response = await axios.get(`${API_BASE_URL}/follow/check`, {
+                        const response = await axios.get('/follow/check', {
                             params: {
                                 followType: 1,
                                 followId: this.hospitalId
@@ -644,7 +641,7 @@
                 },
                 async toggleHospitalFollow() {
                     try {
-                        const response = await axios.post(`${API_BASE_URL}/follow/toggle`, null, {
+                        const response = await axios.post('/follow/toggle', null, {
                             params: {
                                 followType: 1,
                                 followId: this.hospitalId
@@ -669,7 +666,7 @@
                 },
                 async loadFollowCount() {
                     try {
-                        const response = await axios.get(`${API_BASE_URL}/follow/count`, {
+                        const response = await axios.get('/follow/count', {
                             params: {
                                 followType: 1,
                                 followId: this.hospitalId

@@ -1,5 +1,6 @@
 package com.whlg.hospital.config;
 
+import com.whlg.hospital.interceptor.CrossOriginInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -15,24 +16,29 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private JwtInterceptor jwtInterceptor;
 
+    @Autowired
+    private CrossOriginInterceptor crossOriginInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(crossOriginInterceptor);
+        
         registry.addInterceptor(jwtInterceptor)
-                .addPathPatterns("/user/info", "/user/password") // 需要登录的接口
+                .addPathPatterns("/user/info", "/user/password", "/feedback/**")
                 .excludePathPatterns(
-                        "/user/register",  // 注册
-                        "/user/login",     // 登录
-                        "/index/**"        // 首页接口
+                        "/user/register",
+                        "/user/login",
+                        "/index/**"
                 );
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("*")
+                .allowedOrigins("http://localhost:63342", "http://localhost:8080", "http://127.0.0.1:63342", "http://127.0.0.1:8080")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                .allowCredentials(false)
+                .allowCredentials(true)
                 .maxAge(3600);
     }
 }
