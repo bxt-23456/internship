@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/hospital_db?serverTimezone=UTC
     username: root
-    password: gjh926252
+    password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
@@ -22,7 +22,7 @@ jwt:
 # 用户登录状态配置
 user:
   token:
-    expiration: 30  # 登录状态过期时间（秒），每次请求重置
+    expiration: 300000  # 登录状态过期时间（秒），每次请求重置
 
 # 阿里云短信配置
 aliyun:

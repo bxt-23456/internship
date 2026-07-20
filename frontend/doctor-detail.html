@@ -641,6 +641,11 @@
                 },
                 // 处理预约
                 handleAppointment(day) {
+                    // 检查医生信息是否已加载
+                    if (!this.doctor || !this.doctor.id) {
+                        alert('医生信息加载中，请稍后再试');
+                        return;
+                    }
                     // 构造跳转URL，传递医生ID和日期参数
                     const params = new URLSearchParams({
                         doctorId: this.doctor.id,
@@ -650,7 +655,12 @@
                 },
                 // 跳转到电话咨询
                 goToConsult() {
-                    window.location.href = 'phone-consult.html';
+                    // 检查医生信息是否已加载
+                    if (!this.doctor || !this.doctor.id) {
+                        alert('医生信息加载中，请稍后再试');
+                        return;
+                    }
+                    window.location.href = 'phone-consult.html?doctorId=' + this.doctor.id;
                 }
             },
             mounted() {
