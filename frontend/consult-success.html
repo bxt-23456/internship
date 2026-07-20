@@ -5,6 +5,7 @@
     <title>咨询成功 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -244,19 +245,50 @@
         new Vue({
             el: '#app',
             data: {
-                orderNo: 'CONSULT20260625A26',
-                doctorName: '张明远',
-                doctorTitle: '主任医师',
-                doctorDepartment: '心内科',
-                patientName: '李小明',
-                patientPhone: '138****5678',
-                amount: 100.00,
+                orderNo: '',
+                doctorName: '',
+                doctorTitle: '',
+                doctorDepartment: '',
+                patientName: '',
+                patientPhone: '',
+                amount: 0,
                 payMethod: '支付宝'
             },
             methods: {
+                getUrlParam(name) {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    return urlParams.get(name) || '';
+                },
+                loadData() {
+                    this.orderNo = this.getUrlParam('orderNo');
+                    if (!this.orderNo) {
+                        alert('缺少订单号');
+                        return;
+                    }
+
+                    axios.get('/consult/detail', {
+                        params: {
+                            orderNo: this.orderNo
+                        }
+                    }).then(res => {
+                        if (!res.data.flag) {
+                            throw new Error(res.data.message || '获取咨询订单详情失败');
+                        }
+                        const detail = res.data.data;
+                        this.doctorName = detail.doctorName || '';
+                        this.doctorTitle = detail.doctorTitle || '';
+                        this.doctorDepartment = detail.departmentName || '';
+                        this.patientName = detail.patientName || '';
+                        this.patientPhone = detail.patientPhone || '';
+                        this.amount = parseFloat(detail.amount) || 0;
+                    }).catch(err => {
+                        console.error('获取咨询订单详情失败:', err);
+                        alert(err.message || '获取咨询订单详情失败');
+                    });
+                },
                 // 格式化金额
                 formatAmount(amount) {
-                    return amount.toFixed(2);
+                    return Number(amount || 0).toFixed(2);
                 },
                 // 返回首页
                 goBack() {
@@ -266,6 +298,9 @@
                 goToConsult() {
                     window.location.href = 'my-consult.html';
                 }
+            },
+            mounted() {
+                this.loadData();
             }
         });
     </script>

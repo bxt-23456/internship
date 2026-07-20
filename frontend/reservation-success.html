@@ -5,6 +5,7 @@
     <title>预约成功 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
     <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -400,14 +401,14 @@
                 doctorName: '',
                 doctorTitle: '',
                 doctorDepartment: '',
-                doctorHospital: '北京协和医院',
+                doctorHospital: '',
                 scheduleDate: '',
                 timeSlot: '',
                 patientName: '',
                 patientPhone: '',
-                patientIdCard: '310101********1234',
+                patientIdCard: '',
                 amount: 0,
-                payMethod: ''
+                payMethod: '支付宝'
             },
             methods: {
                 // 获取URL参数
@@ -418,15 +419,34 @@
                 // 加载数据
                 loadData() {
                     this.orderNo = this.getUrlParam('orderNo');
-                    this.doctorName = this.getUrlParam('doctorName');
-                    this.doctorTitle = this.getUrlParam('doctorTitle');
-                    this.doctorDepartment = this.getUrlParam('doctorDepartment');
-                    this.scheduleDate = this.getUrlParam('scheduleDate');
-                    this.timeSlot = this.getUrlParam('timeSlot');
-                    this.patientName = this.getUrlParam('patientName');
-                    this.patientPhone = this.getUrlParam('patientPhone');
-                    this.amount = parseFloat(this.getUrlParam('amount')) || 0;
-                    this.payMethod = this.getUrlParam('payMethod');
+                    if (!this.orderNo) {
+                        alert('缺少订单号');
+                        return;
+                    }
+
+                    axios.get('/appointment/detail', {
+                        params: {
+                            orderNo: this.orderNo
+                        }
+                    }).then(res => {
+                        if (!res.data.flag) {
+                            throw new Error(res.data.message || '获取挂号订单详情失败');
+                        }
+                        const detail = res.data.data;
+                        this.doctorName = detail.doctorName || '';
+                        this.doctorTitle = detail.doctorTitle || '';
+                        this.doctorDepartment = detail.departmentName || '';
+                        this.doctorHospital = detail.hospitalName || '';
+                        this.scheduleDate = detail.appointmentDate || '';
+                        this.timeSlot = detail.appointmentTime || '';
+                        this.patientName = detail.patientName || '';
+                        this.patientPhone = detail.patientPhone || '';
+                        this.patientIdCard = detail.patientIdCard || '';
+                        this.amount = parseFloat(detail.amount) || 0;
+                    }).catch(err => {
+                        console.error('获取挂号订单详情失败:', err);
+                        alert(err.message || '获取挂号订单详情失败');
+                    });
                 },
                 // 格式化金额
                 formatAmount(amount) {
@@ -441,7 +461,7 @@
                 },
                 // 查看医生
                 goToDoctor() {
-                    window.location.href = 'doctor.html';
+                    window.location.href = 'my-appointment.html';
                 }
             },
             mounted() {

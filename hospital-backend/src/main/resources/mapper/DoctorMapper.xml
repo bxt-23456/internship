@@ -71,4 +71,52 @@
         WHERE d.id = #{id}
     </select>
 
+    <!-- 根据医生ID查询预约详情 -->
+    <select id="selectReservationDoctorInfo" resultType="com.whlg.hospital.vo.reservation.ReservationDoctorVo">
+        SELECT
+            d.id,
+            d.name,
+            d.gender,
+            d.title,
+            d.department_id AS departmentId,
+            dt.name AS departmentName,
+            d.hospital_id AS hospitalId,
+            h.name AS hospitalName,
+            d.avatar,
+            d.phone,
+            d.intro,
+            d.expertise,
+            d.consult_count AS consultCount,
+            d.rating,
+            d.follow_count AS followCount,
+            d.online_status AS onlineStatus,
+            d.price,
+            d.registration_price AS registrationPrice,
+            d.status
+        FROM t_doctor d
+                 LEFT JOIN t_department dt ON d.department_id = dt.id
+                 LEFT JOIN t_hospital h ON d.hospital_id = h.id
+        WHERE d.id = #{doctorId}
+    </select>
+
+    <select id="getReservationSlots" resultType="com.whlg.hospital.vo.reservation.ReservationSlotVo">
+        SELECT
+            time_slot AS timeSlot,
+            remain_count AS remainCount,
+            total_count AS totalCount,
+            status
+        FROM t_schedule
+        WHERE doctor_id = #{doctorId}
+          AND schedule_date = #{scheduleDate}
+        ORDER BY FIELD(
+                         time_slot,
+                         '08:00-09:00',
+                         '09:00-10:00',
+                         '10:00-11:00',
+                         '14:00-15:00',
+                         '15:00-16:00',
+                         '16:00-17:00'
+                 )
+    </select>
+
 </mapper>

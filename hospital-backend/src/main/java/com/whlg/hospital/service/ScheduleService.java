@@ -2,7 +2,6 @@ package com.whlg.hospital.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.whlg.hospital.entity.Schedule;
-
 import java.util.List;
 
 public interface ScheduleService extends IService<Schedule> {
@@ -14,4 +13,10 @@ public interface ScheduleService extends IService<Schedule> {
      * @return 排班列表
      */
     List<Schedule> listByDoctorId(Long doctorId, int days);
+
+    // 启动时补齐未来7天排班
+    void initNext7DaysSchedule();
+
+    // 每天0点滚动维护排班
+    void refreshNext7DaysSchedule();
 }

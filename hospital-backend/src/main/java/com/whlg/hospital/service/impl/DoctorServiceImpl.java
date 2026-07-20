@@ -7,9 +7,12 @@ import com.whlg.hospital.mapper.DoctorMapper;
 import com.whlg.hospital.service.DoctorService;
 import com.whlg.hospital.vo.DoctorDetailVo;
 import com.whlg.hospital.vo.DoctorVo;
+import com.whlg.hospital.vo.reservation.ReservationDoctorVo;
+import com.whlg.hospital.vo.reservation.ReservationSlotVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -51,5 +54,14 @@ public class DoctorServiceImpl extends ServiceImpl<DoctorMapper, Doctor> impleme
         }
         wrapper.eq(Doctor::getStatus, 1);
         return this.list(wrapper);
+    }
+
+    public ReservationDoctorVo getReservationDoctorInfo(Long doctorId) {
+        return doctorMapper.selectReservationDoctorInfo(doctorId);
+    }
+
+    @Override
+    public List<ReservationSlotVo> getReservationSlots(Long doctorId, String scheduleDate) {
+        return doctorMapper.getReservationSlots(doctorId, scheduleDate);
     }
 }
