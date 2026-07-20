@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.whlg.hospital.mapper.DepartmentMapper">
+
+    <resultMap id="DepartmentVoMap" type="com.whlg.hospital.vo.DepartmentVo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="status" property="status"/>
+        <collection property="children" ofType="com.whlg.hospital.vo.DepartmentVo"
+                    select="selectChildrenByParentId" column="id"/>
+    </resultMap>
+
+    <select id="selectDepartmentTree" resultMap="DepartmentVoMap">
+        SELECT id, name, description, parent_id, sort_order, status
+        FROM t_department
+        WHERE parent_id = 0
+        AND status = 1
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <select id="selectChildrenByParentId" resultMap="DepartmentVoMap">
+        SELECT id, name, description, parent_id, sort_order, status
+        FROM t_department
+        WHERE parent_id = #{parentId}
+        AND status = 1
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <select id="selectSiblingDepartments" resultType="com.whlg.hospital.vo.DepartmentVo">
+        SELECT id, name, description, parent_id AS parentId, sort_order AS sortOrder, status
+        FROM t_department
+        WHERE parent_id = (
+            SELECT parent_id FROM t_department WHERE id = #{departmentId}
+        )
+        AND id != #{departmentId}
+        AND status = 1
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+</mapper>

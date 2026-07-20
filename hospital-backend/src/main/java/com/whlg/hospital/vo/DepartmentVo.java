@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * 科室VO
  */
@@ -18,4 +20,5 @@ public class DepartmentVo {
     private Long parentId;
     private Integer sortOrder;
     private Integer status;
+    private List<DepartmentVo> children;
 }
