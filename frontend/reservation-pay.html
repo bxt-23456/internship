@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <title>预约支付 - 健康之路在线医疗</title>
     <script src="js/vue.js"></script>
+    <script src="js/axios-0.18.0.js"></script>
+    <script src="js/auth-interceptor.js"></script>
     <link rel="stylesheet" href="css/common.css">
     <style>
         * {
@@ -414,7 +416,7 @@
             el: '#app',
             data: {
                 loading: true,
-                payButtonDisabled: false,  // 支付按钮是否禁用
+                payButtonDisabled: false,
                 orderNo: '',
                 doctorName: '',
                 doctorTitle: '',
@@ -438,38 +440,105 @@
                     return amount;
                 },
                 loadPayInfo() {
-                    this.orderNo = this.getUrlParam('orderNo') || 'ORD202606270001';
-                    this.doctorName = '张明远';
-                    this.doctorTitle = '主任医师';
-                    this.doctorDepartment = '心内科';
-                    this.scheduleDate = '2026-06-28';
-                    this.timeSlot = '上午 09:00-12:00';
-                    this.patientName = '李小明';
-                    this.patientPhone = '138****5678';
-                    this.amount = 50.00;
-                    this.loading = false;
+                    this.orderNo = this.getUrlParam('orderNo') || '';
+                    if (!this.orderNo) {
+                        alert('缺少订单号');
+                        return;
+                    }
+
+                    axios.get('/appointment/detail', {
+                        params: {
+                            orderNo: this.orderNo
+                        }
+                    }).then(res => {
+                        if (!res.data.flag) {
+                            throw new Error(res.data.message || '获取订单详情失败');
+                        }
+                        const detail = res.data.data;
+                        this.doctorName = detail.doctorName || '';
+                        this.doctorTitle = detail.doctorTitle || '';
+                        this.doctorDepartment = detail.departmentName || '';
+                        this.scheduleDate = detail.appointmentDate || '';
+                        this.timeSlot = detail.appointmentTime || '';
+                        this.patientName = detail.patientName || '';
+                        this.patientPhone = detail.patientPhone || '';
+                        this.amount = Number(detail.amount || 0);
+                        this.loading = false;
+                    }).catch(err => {
+                        console.error('获取挂号订单详情失败:', err);
+                        alert(err.message || '获取挂号订单详情失败');
+                    });
                 },
                 submitPay() {
                     if (this.payButtonDisabled) {
                         return;
                     }
-                    
+                    if (this.payMethod !== 'alipay') {
+                        alert('当前仅支持支付宝沙箱支付');
+                        return;
+                    }
+
                     this.payButtonDisabled = true;
-                    
-                    const params = new URLSearchParams({
-                        orderNo: this.orderNo,
-                        doctorName: this.doctorName,
-                        doctorTitle: this.doctorTitle,
-                        doctorDepartment: this.doctorDepartment,
-                        scheduleDate: this.scheduleDate,
-                        timeSlot: this.timeSlot,
-                        patientName: this.patientName,
-                        patientPhone: this.patientPhone,
-                        amount: this.amount,
-                        payMethod: this.payMethod === 'alipay' ? '支付宝' : '微信支付'
+
+                    axios.post('/alipay/pay', {
+                        widout_trade_no: this.orderNo,
+                        widtotal_amount: this.formatAmount(this.amount),
+                        widsubject: '挂号订单支付',
+                        widbody: this.doctorName + ' ' + this.scheduleDate + ' ' + this.timeSlot
+                    }).then(res => {
+                        if (!res.data.flag) {
+                            throw new Error(res.data.message || '发起支付失败');
+                        }
+                        // #region debug-point C:frontend-raw-html
+                        fetch('http://127.0.0.1:7777/event', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                sessionId: 'alipay-504-timeout',
+                                runId: 'pre-fix',
+                                hypothesisId: 'C',
+                                location: 'reservation-pay.html:488',
+                                msg: '[DEBUG] frontend raw pay html snapshot',
+                                data: {
+                                    orderNo: this.orderNo,
+                                    containsHttpGateway: (res.data.data || '').indexOf('http://openapi-sandbox.dl.alipaydev.com/gateway.do') > -1,
+                                    containsHttpsGateway: (res.data.data || '').indexOf('https://openapi-sandbox.dl.alipaydev.com/gateway.do') > -1,
+                                    snippet: (res.data.data || '').slice(0, 220)
+                                },
+                                ts: Date.now()
+                            })
+                        }).catch(() => {});
+                        // #endregion
+                        const payHtml = (res.data.data || '').replace(
+                            /http:\/\/openapi-sandbox\.dl\.alipaydev\.com\/gateway\.do/g,
+                            'https://openapi-sandbox.dl.alipaydev.com/gateway.do'
+                        );
+                        // #region debug-point D:frontend-replaced-html
+                        fetch('http://127.0.0.1:7777/event', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                sessionId: 'alipay-504-timeout',
+                                runId: 'pre-fix',
+                                hypothesisId: 'D',
+                                location: 'reservation-pay.html:496',
+                                msg: '[DEBUG] frontend replaced pay html snapshot',
+                                data: {
+                                    orderNo: this.orderNo,
+                                    containsHttpGateway: payHtml.indexOf('http://openapi-sandbox.dl.alipaydev.com/gateway.do') > -1,
+                                    containsHttpsGateway: payHtml.indexOf('https://openapi-sandbox.dl.alipaydev.com/gateway.do') > -1,
+                                    snippet: payHtml.slice(0, 220)
+                                },
+                                ts: Date.now()
+                            })
+                        }).catch(() => {});
+                        // #endregion
+                        document.open();
+                        document.write(payHtml);
+                        document.close();
+                    }).catch(err => {
+                        this.payButtonDisabled = false;
+                        console.error('发起挂号支付失败:', err);
+                        alert(err.message || '发起支付失败');
                     });
-                    
-                    window.location.href = 'reservation-success.html?' + params.toString();
                 }
             },
             mounted() {

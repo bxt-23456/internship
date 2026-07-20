@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.whlg.hospital.mapper.DiseaseMapper">
+
+    <resultMap id="DiseaseVoMap" type="com.whlg.hospital.vo.DiseaseVo">
+        <id column="id" property="id"/>
+        <result column="department_id" property="departmentId"/>
+        <result column="department_name" property="departmentName"/>
+        <result column="primary_dept_id" property="primaryDeptId"/>
+        <result column="primary_dept_name" property="primaryDeptName"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="alias" property="alias"/>
+        <result column="location" property="location"/>
+        <result column="treatment" property="treatment"/>
+        <result column="symptoms" property="symptoms"/>
+        <result column="treatment_period" property="treatmentPeriod"/>
+        <result column="cure_rate" property="cureRate"/>
+        <result column="examinations" property="examinations"/>
+        <result column="follow_count" property="followCount"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectDiseasePage" resultMap="DiseaseVoMap">
+        SELECT d.id, d.department_id, d.name, d.description, d.alias, d.location,
+               d.treatment, d.symptoms, d.treatment_period, d.cure_rate,
+               d.examinations, d.follow_count, d.create_time, dept.name AS department_name
+        FROM t_disease d
+        LEFT JOIN t_department dept ON d.department_id = dept.id
+        <where>
+            <if test="departmentId != null">
+                AND d.department_id = #{departmentId}
+            </if>
+        </where>
+        ORDER BY d.follow_count DESC, d.id ASC
+    </select>
+
+    <select id="selectDiseaseDetail" resultMap="DiseaseVoMap">
+        SELECT d.id, d.department_id, d.name, d.description, d.alias, d.location,
+               d.treatment, d.symptoms, d.treatment_period, d.cure_rate,
+               d.examinations, d.follow_count, d.create_time,
+               dept.name AS department_name,
+               pdept.id AS primary_dept_id,
+               pdept.name AS primary_dept_name
+        FROM t_disease d
+        LEFT JOIN t_department dept ON d.department_id = dept.id
+        LEFT JOIN t_department pdept ON dept.parent_id = pdept.id
+        WHERE d.id = #{id}
+    </select>
+
+</mapper>

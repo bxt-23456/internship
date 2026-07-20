@@ -4,6 +4,7 @@ import com.whlg.hospital.service.FollowService;
 import com.whlg.hospital.util.R;
 import com.whlg.hospital.vo.DoctorVo;
 import com.whlg.hospital.vo.HospitalVo;
+import com.whlg.hospital.vo.DiseaseVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -80,6 +81,20 @@ public class FollowController {
 
         List<DoctorVo> doctors = followService.getFollowedDoctors(userId);
         return R.createSuccess(doctors);
+    }
+
+    /**
+     * 获取关注的疾病列表
+     */
+    @GetMapping("/diseases")
+    public R<List<DiseaseVo>> getFollowedDiseases(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (userId == null) {
+            return R.createError(20001, "请先登录");
+        }
+
+        List<DiseaseVo> diseases = followService.getFollowedDiseases(userId);
+        return R.createSuccess(diseases);
     }
 
     /**

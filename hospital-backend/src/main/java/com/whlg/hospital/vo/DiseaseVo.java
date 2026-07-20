@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 /**
  * 疾病VO
  */
@@ -15,6 +17,8 @@ public class DiseaseVo {
     private Long id;
     private Long departmentId;
     private String departmentName;
+    private Long primaryDeptId;
+    private String primaryDeptName;
     private String name;
     private String description;
     private String alias;
@@ -25,4 +29,5 @@ public class DiseaseVo {
     private String cureRate;
     private String examinations;
     private Integer followCount;
+    private LocalDateTime createTime;
 }

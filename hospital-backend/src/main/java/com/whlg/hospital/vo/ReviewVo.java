@@ -16,12 +16,17 @@ public class ReviewVo {
 
     private Long id;
     private Integer orderType;
+    private String orderTypeName;
     private Long orderId;
     private Long userId;
     private String userName;
     private String userAvatar;
     private Long doctorId;
     private String doctorName;
+    private String doctorTitle;
+    private String doctorAvatar;
+    private String departmentName;
+    private String hospitalName;
     private Integer rating;
     private String content;
     private LocalDateTime createTime;

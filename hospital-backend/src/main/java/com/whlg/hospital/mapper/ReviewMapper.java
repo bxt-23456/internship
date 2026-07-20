@@ -13,4 +13,6 @@ public interface ReviewMapper extends BaseMapper<Review> {
      * 查询指定医生的评价列表（关联用户表获取用户名和头像）
      */
     List<ReviewVo> selectReviewVoByDoctorId(@Param("doctorId") Long doctorId);
+
+    List<ReviewVo> selectReviewList(@Param("userId") Long userId);
 }

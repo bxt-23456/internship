@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.whlg.hospital.entity.Doctor;
 import com.whlg.hospital.vo.DoctorDetailVo;
 import com.whlg.hospital.vo.DoctorVo;
+import com.whlg.hospital.vo.reservation.ReservationDoctorVo;
+import com.whlg.hospital.vo.reservation.ReservationSlotVo;
 
 import java.util.List;
 
@@ -26,4 +28,8 @@ public interface DoctorService extends IService<Doctor> {
 
     //搜索医生
     public List<Doctor> searchDoctors(String keyword);
+
+    public ReservationDoctorVo getReservationDoctorInfo(Long doctorId);
+
+    public List<ReservationSlotVo> getReservationSlots(Long doctorId, String scheduleDate);
 }

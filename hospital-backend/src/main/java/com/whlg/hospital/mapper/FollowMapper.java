@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.whlg.hospital.entity.Follow;
 import com.whlg.hospital.vo.DoctorVo;
 import com.whlg.hospital.vo.HospitalVo;
+import com.whlg.hospital.vo.DiseaseVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -48,4 +49,11 @@ public interface FollowMapper extends BaseMapper<Follow> {
      */
     int countByTarget(@Param("followType") Integer followType, 
                       @Param("followId") Long followId);
+
+    /**
+     * 查询用户关注的疾病列表
+     * @param userId 用户ID
+     * @return 疾病列表
+     */
+    List<DiseaseVo> selectFollowedDiseases(@Param("userId") Long userId);
 }

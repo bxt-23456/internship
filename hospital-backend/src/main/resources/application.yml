@@ -7,8 +7,8 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/hospital_db?serverTimezone=UTC
     username: root
-    password: 123456
-    driver-class-name: com.mysql.jdbc.Driver
+    password: gjh926252
+    driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
       initial-size: 20
@@ -25,12 +25,13 @@ user:
     expiration: 300000  # 登录状态过期时间（秒），每次请求重置
 
 # 阿里云短信配置
-
 aliyun:
   sms:
     access-key-id: 填写你的id
     access-key-secret: 填写你的密码
     endpoint: dypnsapi.aliyuncs.com
+    sign-name: 短信签名
+    template-code: 短信模板CODE
 
 mybatis-plus:
   type-aliases-package: com.whlg.hospital.entity,com.whlg.hospital.dto,com.whlg.hospital.vo	#指定别名实体类的包
