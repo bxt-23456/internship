@@ -24,7 +24,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(crossOriginInterceptor);
         
         registry.addInterceptor(jwtInterceptor)
-                .addPathPatterns("/user/info", "/user/password", "/user/changePassword", "/user/logout", "/follow/**", "/feedback/**")
+                .addPathPatterns("/user/info", "/user/password", "/user/changePassword", "/user/logout", "/follow/**", "/feedback/**", "/familyMember/**")
                 .excludePathPatterns(
                         "/user/register",
                         "/user/login",

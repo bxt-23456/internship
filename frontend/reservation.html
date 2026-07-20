@@ -795,17 +795,7 @@
                 },
 
                 getFamilyMembers() {
-                    const userId = this.getUserId();
-                    if (!userId) {
-                        alert('请先登录后再预约');
-                        return;
-                    }
-
-                    axios.get('/reservation/getFamilyMember', {
-                        params: {
-                            userId: userId
-                        }
-                    }).then(res => {
+                    axios.get('/familyMember/list').then(res => {
                         if (!res.data.flag) {
                             throw new Error(res.data.message || '获取就诊人失败');
                         }

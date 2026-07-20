@@ -48,22 +48,6 @@ public class ReservationController {
     public R<List<FamilyMemberVo>> getFamilyMembers(@RequestParam Long userId) {
         List<FamilyMemberVo> result = new ArrayList<>();
 
-        User user = userService.getUserInfo(userId);
-        if (user != null) {
-            FamilyMemberVo self = new FamilyMemberVo();
-            self.setId(user.getId());
-            self.setUserId(user.getId());
-            self.setName(user.getRealName() != null && !user.getRealName().isEmpty() ? user.getRealName() : user.getUsername());
-            self.setGender(user.getGender());
-            self.setBirthday(user.getBirthday());
-            self.setPhone(user.getPhone());
-            // t_user 当前没有身份证字段，这里先返回空串，避免前端空指针。
-            self.setIdCard("");
-            self.setRelation("本人");
-            self.setIsDefault(1);
-            result.add(self);
-        }
-
         List<FamilyMember> familyMembers = familyMemberService.listFamilyMembersByUserId(userId);
         for (FamilyMember familyMember : familyMembers) {
             FamilyMemberVo item = new FamilyMemberVo();

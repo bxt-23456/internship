@@ -27,6 +27,7 @@ user:
 # 阿里云短信配置
 
 
+
 mybatis-plus:
   type-aliases-package: com.whlg.hospital.entity,com.whlg.hospital.dto,com.whlg.hospital.vo	#指定别名实体类的包
   mapper-locations: classpath:mapper/*.xml  #指定Mapper映射文件的路径
