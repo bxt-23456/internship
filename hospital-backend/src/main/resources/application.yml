@@ -17,7 +17,12 @@ spring:
 # JWT配置
 jwt:
   secret: hospital_secret_key_2024_very_long_and_secure
-  expiration: 86400000  # 24小时（毫秒）
+  expiration: 86400000  # 24小时（毫秒）- JWT仅作为标识，实际状态由Redis管理
+
+# 用户登录状态配置
+user:
+  token:
+    expiration: 30  # 登录状态过期时间（秒），每次请求重置
 
 # 阿里云短信配置
 

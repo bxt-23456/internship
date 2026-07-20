@@ -9,6 +9,7 @@ import com.whlg.hospital.service.UserService;
 import com.whlg.hospital.util.AliyunSmsUtil;
 import com.whlg.hospital.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +35,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /** Redis中验证码的key前缀 */
     private static final String SMS_CODE_PREFIX = "sms:code:";
+
+    /** Redis中用户token的key前缀 */
+    private static final String USER_TOKEN_PREFIX = "user:token:";
+
+    @Value("${user.token.expiration:60}")
+    private Long tokenExpiration;
 
     /** 短信签名 */
     private static final String SMS_SIGN_NAME = "速通互联验证码";
@@ -172,6 +179,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 生成JWT Token
         String token = jwtUtil.generateToken(user.getId(), user.getUsername());
 
+        // 将token存入Redis，记录用户登录状态
+        String redisKey = USER_TOKEN_PREFIX + user.getId();
+        redisTemplate.opsForValue().set(redisKey, token, tokenExpiration, TimeUnit.SECONDS);
+
         // 构建返回的用户信息（不包含密码）
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("id", user.getId());
@@ -277,5 +288,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         this.updateById(user);
 
         return "密码修改成功";
+    }
+
+    @Override
+    public void logout(Long userId) {
+        // 删除Redis中的登录状态
+        String redisKey = USER_TOKEN_PREFIX + userId;
+        redisTemplate.delete(redisKey);
     }
 }

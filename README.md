@@ -11,3 +11,5 @@ aliyun:
     endpoint: dypnsapi.aliyuncs.com
 ```
 
+> **注意：** 请先启动 Redis，再启动项目。项目使用 Redis 存储用户登录 Token，未启动 Redis 会导致登录功能异常。
+
