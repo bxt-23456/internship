@@ -1,6 +1,8 @@
 package com.whlg.hospital.vo.reservation;
 
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,12 +13,15 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReservationDoctorVo {
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
     private String name;
     private Integer gender;
     private String title;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long departmentId;
     private String departmentName;
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long hospitalId;
     private String hospitalName;
     private String avatar;
