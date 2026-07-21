@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -29,7 +30,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/user/register",
                         "/user/login",
                         "/user/sendCode",
-                        "/index/**"
+                        "/index/**",
+                        "/upload/**"
                 );
     }
 
@@ -41,5 +43,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .allowedHeaders("*")
                 .allowCredentials(true)
                 .maxAge(3600);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String userDir = System.getProperty("user.dir");
+        registry.addResourceHandler("/upload/**")
+                .addResourceLocations("file:" + userDir + "/uploads/");
     }
 }

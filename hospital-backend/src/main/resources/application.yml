@@ -10,12 +10,15 @@ app:
     #5500和8080全部增加进去
     allowed-origins:
       - "http://localhost:63342"
+      - "http://localhost:30998"
       - "http://localhost:8080"
       - "http://127.0.0.1:63342"
+      - "http://localhost:7070"
       - "http://127.0.0.1:8080"
       - "http://127.0.0.1:5500"
       - "http://localhost:5500"
       - "http://localhost:57596"
+      - "http://localhost:12235"
       - "https://33401ee1.r35.cpolar.top"
       - "https://66617a45.r35.cpolar.top"
 
@@ -25,6 +28,11 @@ spring:
     port: 6379
     password:
     timeout: 6000
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 30MB
   datasource:
     url: jdbc:mysql://localhost:3306/hospital_db?serverTimezone=UTC
     username: root
@@ -46,7 +54,11 @@ user:
     expiration: 1800  # 登录状态过期时间（秒），每次请求重置
 
 # 阿里云短信配置
-
+aliyun:
+  sms:
+    access-key-id: 填写你的id
+    access-key-secret: 填写你的密码
+    endpoint: dypnsapi.aliyuncs.com
 
 
 mybatis-plus:

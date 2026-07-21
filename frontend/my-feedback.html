@@ -498,8 +498,8 @@
                         <span class="feedback-time">{{ feedback.createTimeText }}</span>
                         </div>
                         <div class="feedback-content">{{ feedback.content }}</div>
-                        <div v-if="feedback.images && feedback.images.length > 0" class="feedback-images">
-                            <img v-for="(img, index) in feedback.images" :key="index" :src="img" class="feedback-image" />
+                        <div v-if="feedback.imagesList && feedback.imagesList.length > 0" class="feedback-images">
+                            <img v-for="(img, index) in feedback.imagesList" :key="index" :src="baseUrl + img" class="feedback-image" />
                         </div>
                         <div v-if="feedback.reply" class="reply-section">
                             <div class="reply-header">
@@ -545,10 +545,12 @@
                 showAddForm: false,
                 currentPage: 1,
                 pageSize: 5,
+                baseUrl: '',
                 formData: {
                     type: '',
                     content: '',
-                    images: []
+                    images: [],
+                    imageFiles: []
                 },
                 feedbacks: []
             },
@@ -610,20 +612,24 @@
                 handleUpload(event) {
                     const files = event.target.files;
                     if (files) {
-                        Array.from(files).forEach((file, index) => {
-                            if (this.formData.images.length < 3 && index < 3) {
-                                const reader = new FileReader();
-                                reader.onload = (e) => {
-                                    this.formData.images.push(e.target.result);
-                                };
-                                reader.readAsDataURL(file);
-                            }
-                        });
+                        const maxCount = 3;
+                        const currentCount = this.formData.images.length;
+                        const remaining = maxCount - currentCount;
+                        for (let i = 0; i < files.length && i < remaining; i++) {
+                            const file = files[i];
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                this.formData.images.push(e.target.result);
+                            };
+                            reader.readAsDataURL(file);
+                            this.formData.imageFiles.push(file);
+                        }
                     }
                     event.target.value = '';
                 },
                 removeImage(index) {
                     this.formData.images.splice(index, 1);
+                    this.formData.imageFiles.splice(index, 1);
                 },
                 submitFeedback() {
                     if (!this.formData.type) {
@@ -635,11 +641,15 @@
                         return;
                     }
                     
-                    axios.post('/feedback/submit', {
-                        type: this.formData.type,
-                        content: this.formData.content.trim(),
-                        images: this.formData.images
-                    })
+                    const formData = new FormData();
+                    formData.append('type', this.formData.type);
+                    formData.append('content', this.formData.content.trim());
+                    
+                    this.formData.imageFiles.forEach((file, index) => {
+                        formData.append('images', file);
+                    });
+                    
+                    axios.post('/feedback/submit', formData)
                     .then(response => {
                         if (response.data.code === 20000) {
                             alert('反馈提交成功！');
@@ -659,7 +669,8 @@
                     this.formData = {
                         type: '',
                         content: '',
-                        images: []
+                        images: [],
+                        imageFiles: []
                     };
                 },
                 loadFeedbacks() {
@@ -678,6 +689,7 @@
                 }
             },
             mounted() {
+                this.baseUrl = axios.defaults.baseURL || '';
                 this.loadFeedbacks();
             }
         });
