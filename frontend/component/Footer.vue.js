@@ -1,4 +1,3 @@
-// Vue2 Footer组件
 Vue.component('footer-component', {
     template: `
         <div class="footer">
@@ -30,15 +29,35 @@ Vue.component('footer-component', {
                 <div class="footer-section">
                     <h4>联系方式</h4>
                     <ul>
-                        <li>服务热线：400-888-8888</li>
+                        <li>服务热线：{{ config.hospital_phone || '400-888-8888' }}</li>
                         <li>邮箱：service@hospital.com</li>
                         <li>地址：北京市朝阳区健康路100号</li>
                     </ul>
                 </div>
             </div>
             <div class="copyright">
-                © 2024 健康之路在线医疗平台 版权所有
+                {{ config.copyright || '© 2024 健康之路在线医疗平台 版权所有' }}
             </div>
         </div>
-    `
+    `,
+    data() {
+        return {
+            config: {}
+        }
+    },
+    mounted() {
+        this.loadConfig();
+    },
+    methods: {
+        async loadConfig() {
+            try {
+                const response = await axios.get('/config/all');
+                if (response.data.code === 20000) {
+                    this.config = response.data.data || {};
+                }
+            } catch (error) {
+                console.error('获取系统配置失败:', error);
+            }
+        }
+    }
 });

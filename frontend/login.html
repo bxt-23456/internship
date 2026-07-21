@@ -174,7 +174,7 @@
 <body>
     <div id="app" class="login-container">
         <div class="logo">
-            <h1>健康之路在线医疗</h1>
+            <h1>{{ config.hospital_name || '健康之路在线医疗' }}</h1>
         </div>
 
         <div class="success-message" :class="{show: showSuccess}">
@@ -245,7 +245,8 @@
                 showSuccess: false,
                 showError: false,
                 successMessage: '',
-                errorMessage: ''
+                errorMessage: '',
+                config: {}
             },
             methods: {
                 validatePhone(phone) {
@@ -318,7 +319,20 @@
                 },
                 showForgotPassword() {
                     window.location.href = 'forgot-password.html';
+                },
+                async loadConfig() {
+                    try {
+                        const response = await axios.get('/config/all');
+                        if (response.data.code === 20000) {
+                            this.config = response.data.data || {};
+                        }
+                    } catch (error) {
+                        console.error('获取系统配置失败:', error);
+                    }
                 }
+            },
+            mounted() {
+                this.loadConfig();
             }
         });
     </script>

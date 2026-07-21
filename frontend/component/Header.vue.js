@@ -1,10 +1,9 @@
-// Vue2 Header组件
 Vue.component('header-component', {
     template: `
         <div class="header">
             <div class="header-content">
                 <div class="logo">
-                    <span>健康之路在线医疗</span>
+                    <span>{{ config.hospital_name || '健康之路在线医疗' }}</span>
                 </div>
                 <div class="nav">
                     <a href="index.html" :class="{active: activeNav === 'home'}">首页</a>
@@ -40,24 +39,34 @@ Vue.component('header-component', {
         return {
             searchText: '',
             isLoggedIn: false,
-            displayName: ''
+            displayName: '',
+            config: {}
         };
     },
     mounted() {
-        // 检查登录状态（从localStorage获取token和userInfo）
         const token = localStorage.getItem('token');
         const userInfo = localStorage.getItem('userInfo');
         if (token && userInfo) {
             const user = JSON.parse(userInfo);
             this.isLoggedIn = true;
-            // 优先显示真实姓名，其次用户名，最后手机号
             this.displayName = user.realName || user.username || this.formatPhone(user.phone);
         }
+        this.loadConfig();
     },
     methods: {
         formatPhone(phone) {
             if (!phone) return '';
             return phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1****$3');
+        },
+        async loadConfig() {
+            try {
+                const response = await axios.get('/config/all');
+                if (response.data.code === 20000) {
+                    this.config = response.data.data || {};
+                }
+            } catch (error) {
+                console.error('获取系统配置失败:', error);
+            }
         },
         handleSearch() {
             if (this.searchText.trim()) {
@@ -65,7 +74,6 @@ Vue.component('header-component', {
             }
         },
         handleLogout() {
-            // 调用后端退出登录接口，清除Redis中的登录状态
             axios.post('/user/logout').then(() => {
                 localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
@@ -73,7 +81,6 @@ Vue.component('header-component', {
                 this.displayName = '';
                 window.location.href = 'index.html';
             }).catch(() => {
-                // 即使后端调用失败，也清除本地状态
                 localStorage.removeItem('token');
                 localStorage.removeItem('userInfo');
                 this.isLoggedIn = false;
