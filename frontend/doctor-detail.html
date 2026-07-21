@@ -446,7 +446,7 @@
                     <div class="desc">专业医生一对一电话咨询服务</div>
                 </div>
                 <div class="price">
-                    <span class="price-value">¥{{ doctor.price || 0 }}</span>
+                    <span class="price-value">¥{{ doctor.price || config.consult_price_default || 0 }}</span>
                     <span class="price-unit">/次</span>
                 </div>
                 <button class="consult-btn" @click="goToConsult">立即咨询</button>
@@ -518,7 +518,9 @@
                 // 排班数据（从数据库获取）
                 scheduleDays: [],
                 // 加载状态
-                loading: true
+                loading: true,
+                // 系统配置
+                config: {}
             },
             computed: {
                 // 擅长领域标签
@@ -697,12 +699,23 @@
                     const month = String(date.getMonth() + 1).padStart(2, '0');
                     const day = String(date.getDate()).padStart(2, '0');
                     return `${year}-${month}-${day}`;
+                },
+                async loadConfig() {
+                    try {
+                        const response = await axios.get('/config/all');
+                        if (response.data.code === 20000) {
+                            this.config = response.data.data || {};
+                        }
+                    } catch (error) {
+                        console.error('获取系统配置失败:', error);
+                    }
                 }
             },
             mounted() {
                 this.loadDoctor();
                 this.loadReviews();
                 this.loadSchedule();
+                this.loadConfig();
             }
         });
     </script>
