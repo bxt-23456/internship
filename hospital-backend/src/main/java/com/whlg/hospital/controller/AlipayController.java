@@ -14,6 +14,7 @@ import com.whlg.hospital.util.R;
 import com.whlg.hospital.vo.AppointmentVo;
 import com.whlg.hospital.vo.ConsultVo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,9 +37,10 @@ import java.util.*;
 @RequestMapping("/alipay")
 public class AlipayController {
 
-    // Live Server 当前是以项目根目录作为站点根目录，前端页面实际位于 /frontend 下。
-    // 注意：这里需要使用 cpolar 的前端地址，而不是本地地址
-    private static final String FRONTEND_BASE_URL = "http://1120ee0d.r2.cpolar.top/";
+    // 从 application.yml 读取前端基础地址
+    @Value("${app.frontend-base-url}")
+    private String frontendBaseUrl;
+
     private static final String DEBUG_SERVER_URL = "http://127.0.0.1:7777/event";
     private static final String DEBUG_SESSION_ID = "alipay-504-timeout";
 
@@ -257,9 +259,9 @@ public class AlipayController {
             handlePaySuccess(out_trade_no, trade_no, params.toString());
 
             if (isAppointmentOrder(out_trade_no)) {
-                response.sendRedirect(FRONTEND_BASE_URL + "reservation-success.html?orderNo=" + URLEncoder.encode(out_trade_no, "UTF-8"));
+                response.sendRedirect(frontendBaseUrl + "reservation-success.html?orderNo=" + URLEncoder.encode(out_trade_no, "UTF-8"));
             } else if (isConsultOrder(out_trade_no)) {
-                response.sendRedirect(FRONTEND_BASE_URL + "consult-success.html?orderNo=" + URLEncoder.encode(out_trade_no, "UTF-8"));
+                response.sendRedirect(frontendBaseUrl + "consult-success.html?orderNo=" + URLEncoder.encode(out_trade_no, "UTF-8"));
             } else {
                 response.getWriter().println("trade_no:"+trade_no+"<br/>out_trade_no:"+out_trade_no+"<br/>total_amount:"+total_amount);
             }

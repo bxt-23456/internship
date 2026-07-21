@@ -1,33 +1,31 @@
 package com.whlg.hospital.config;
 
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 全局CORS配置
  */
 @Configuration
+@ConfigurationProperties(prefix = "app.cors")
 public class CorsConfig {
 
-    private static final List<String> ALLOWED_ORIGINS = Arrays.asList(
-            "http://localhost:63342",
-            "http://localhost:8080",
-            "http://127.0.0.1:63342",
-            "http://127.0.0.1:8080",
-            "http://127.0.0.1:5500",
-            "http://localhost:5500",
-            "http://localhost:57596",
-            "https://1120ee0d.r2.cpolar.top",
-            "http://1120ee0d.r2.cpolar.top",
-            "https://6a8c7eb.r2.cpolar.top",
-            "http://6a8c7eb.r2.cpolar.top"
-    );
+    private List<String> allowedOrigins = new ArrayList<>();
+
+    public List<String> getAllowedOrigins() {
+        return allowedOrigins;
+    }
+
+    public void setAllowedOrigins(List<String> allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
+    }
 
     @Bean
     public CorsFilter corsFilter() {
@@ -35,7 +33,7 @@ public class CorsConfig {
         
         config.setAllowCredentials(true);
         
-        ALLOWED_ORIGINS.forEach(config::addAllowedOrigin);
+        allowedOrigins.forEach(config::addAllowedOrigin);
         
         config.addAllowedHeader("*");
         
